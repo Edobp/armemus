@@ -1,2 +1,2 @@
-# armemus
+# ARMEMUS
 Development Board ARM Emulator Software
