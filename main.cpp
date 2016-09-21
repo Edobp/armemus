@@ -1,12 +1,12 @@
-#include "mainwindow.h"
+#include "armemus.h"
 #include <QApplication>
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    MainWindow w;
+    armemus w;
     w.setWindowTitle("ARMEMUS");
-    w.show();
+    w.showMaximized();
 
     return a.exec();
 }

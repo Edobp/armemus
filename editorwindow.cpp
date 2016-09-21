@@ -1,5 +1,5 @@
-#include "editor_w.h"
-#include "ui_editor_w.h"
+#include "editorwindow.h"
+#include "ui_editorwindow.h"
 
 Editor_W::Editor_W(QWidget *parent) :
     QMainWindow(parent),

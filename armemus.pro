@@ -13,8 +13,14 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        armemus.cpp
+        armemus.cpp \
+    editorwindow.cpp \
+    boardwindow.cpp
 
-HEADERS  += armemus.h
+HEADERS  += armemus.h \
+    editorwindow.h \
+    boardwindow.h
 
-FORMS    += armemus.ui
+FORMS    += armemus.ui \
+    editorwindow.ui \
+    boardwindow.ui

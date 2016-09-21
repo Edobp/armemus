@@ -1,7 +1,7 @@
-#include "board_w.h"
-#include "ui_board_w.h"
+#include "boardwindow.h"
+#include "ui_boardwindow.h"
 
-#include <qmessagebox.h>
+#include <QMessageBox>
 
 Board_W::Board_W(QWidget *parent) :
     QMainWindow(parent),
