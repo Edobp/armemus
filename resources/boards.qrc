@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="boards/tiva_tm4c123g.svg">images/boards/Tiva_C_Series_TM4C123G.svg</file>
+    </qresource>
+</RCC>
