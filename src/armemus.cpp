@@ -21,7 +21,7 @@ armemus::armemus(QWidget *parent) :
     connect(ui->actionOpen, &QAction::triggered, this, &armemus::actionOpen);
     connect(ui->actionSave, &QAction::triggered, this, &armemus::actionSave);
     connect(ui->actionHelp, &QAction::triggered, this, &armemus::actionHelp);
-    connect(ui->actionAbout, &QAction::triggered, this, &armemus::actionAbout);    
+    connect(ui->actionAbout, &QAction::triggered, this, &armemus::actionAbout);
     connect(ui->actionExit, &QAction::triggered, this, &armemus::actionExit);
     connect(ui->actionBuildOptions, &QAction::triggered, this, &armemus::actionBuildOptions);
 
@@ -38,12 +38,12 @@ armemus::~armemus()
 
 void armemus::actionNew()
 {
-    /*project = new aproject;
+    project = new aproject;
     project->exec();
 
     project->getInfo(projectName, projectPath, boardIndex);
 
-    if ( !projectName.isEmpty() && !projectPath.isEmpty() && boardIndex ){*/
+    if ( !projectName.isEmpty() && !projectPath.isEmpty() && boardIndex ){
 
         outputBrowser = new QTextBrowser;
 
@@ -62,7 +62,7 @@ void armemus::actionNew()
         tabs->setCurrentIndex(0);
 
         board->loadFile(":/boards/tiva_tm4c123g.svg");
-    //}
+    }
 }
 
 void armemus::actionNewFile()
@@ -106,7 +106,7 @@ void armemus::actionAbout()
 }
 
 void armemus::actionExit()
-{  
+{
     qApp->quit();
 }
 
