@@ -1,7 +1,8 @@
 #ifndef ABuild_H
 #define ABuild_H
 
-#include "armemus_def.h"
+#include "aincludes.h"
+#include "adefinitions.h"
 
 namespace Ui {
 class abuild;

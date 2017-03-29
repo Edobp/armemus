@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="boards/Arduino_Due.svg">images/boards/Arduino_Due.svg</file>
+        <file alias="boards/Arduino_Zero.svg">images/boards/Arduino_Zero.svg</file>
+        <file alias="boards/Feather_M0.svg">images/boards/Feather_M0.svg</file>
+        <file alias="boards/Tiva_TM4C123G.svg">images/boards/Tiva_TM4C123G.svg</file>
+        <file alias="boards/boards.txt">files/boards.txt</file>
+    </qresource>
+</RCC>

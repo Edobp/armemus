@@ -1,8 +1,8 @@
 #ifndef Aproject_H
 #define Aproject_H
 
-#include <QDialog>
-#include <QGraphicsScene>
+#include "aincludes.h"
+#include "adefinitions.h"
 
 namespace Ui {
 class aproject;
@@ -13,10 +13,11 @@ class aproject : public QDialog
     Q_OBJECT
 
 public:
-    explicit aproject(QWidget *parent = 0);
+    explicit aproject(QWidget *parent = 0, QList<Board> boards=QList<Board>());
     ~aproject();
 
-    void getInfo(QString& project, QString& path,int& Index);
+    void getInfo(AProjectInfo &info);
+    void clear();
 
 private slots:    
 

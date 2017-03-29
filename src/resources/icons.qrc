@@ -1,0 +1,16 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="icons/new.png">images/icons/libreoffice-math.png</file>
+        <file alias="icons/open.png">images/icons/folder-orange.png</file>
+        <file alias="icons/save.png">images/icons/media-floppy.png</file>
+        <file alias="icons/build.png">images/icons/applications-system.png</file>
+        <file alias="icons/play.png">images/icons/gnome-mplayer.png</file>
+        <file alias="icons/help.png">images/icons/help-about.png</file>
+        <file alias="icons/info.png">images/icons/help-info.png</file>
+        <file alias="icons/stop.png">images/icons/process-stop.png</file>
+        <file alias="icons/exit.png">images/icons/stock_exit.png</file>
+        <file alias="icons/step.png">images/icons/media-playlist-repeat-rtl.png</file>
+        <file alias="icons/cut.png">images/icons/edit-cut.png</file>
+        <file alias="icons/paste.png">images/icons/edit-paste.png</file>
+    </qresource>
+</RCC>

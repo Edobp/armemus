@@ -1,7 +1,8 @@
 #ifndef ADebug_H
 #define ADebug_H
 
-#include "armemus_def.h"
+#include "aincludes.h"
+#include "adefinitions.h"
 
 class adebug : public QTreeWidget
 {

@@ -1,7 +1,8 @@
 #ifndef Aeditor_H
 #define Aeditor_H
 
-#include "armemus_def.h"
+#include "aincludes.h"
+#include "adefinitions.h"
 
 class aeditor : public QTextEdit
 {

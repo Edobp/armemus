@@ -6,7 +6,7 @@
 #include <QXmlStreamWriter>
 #include <QMessageBox>
 
-aproject::aproject(QWidget *parent) :
+aproject::aproject(QWidget *parent, QList<Board> boards) :
     QDialog(parent),
     ui(new Ui::aproject)
 {
@@ -37,6 +37,10 @@ aproject::aproject(QWidget *parent) :
     connect(ui->backButton, &QPushButton::clicked, this, &aproject::backTab);
     connect(ui->boardComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &aproject::selectBoard);
     connect(ui->finishButton, &QPushButton::clicked, this, &aproject::actionFinish);
+
+    for( int index=0; index<boards.size(); index++){
+        ui->boardComboBox->addItem( boards[index].name );
+    }
 }
 
 aproject::~aproject()
@@ -52,6 +56,14 @@ void aproject::actionCancel()
     ui->nameLineEdit->clear();
     ui->boardComboBox->setCurrentIndex(0);
     this->close();
+}
+
+void aproject::clear()
+{
+    ui->nameLineEdit->clear();
+    ui->boardComboBox->setCurrentIndex(0);
+    ui->tabWidget->setCurrentIndex(0);
+    ui->pathLineEdit->setText(QStandardPaths::standardLocations(QStandardPaths::HomeLocation).last());
 }
 
 /* ******************************************************************************************
@@ -164,9 +176,9 @@ void aproject::actionFinish()
 /* ******************************************************************************************
  * ******************************************************************************************/
 
-void aproject::getInfo(QString& project, QString& path,int& Index)
+void aproject::getInfo(AProjectInfo &info)
 {
-    project = projectName;
-    path = projectPath;
-    Index = boardIndex;
+    info.name = projectName;
+    info.path = projectPath;
+    info.boardIndex = boardIndex-1;
 }

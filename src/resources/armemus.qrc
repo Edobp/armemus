@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+			<file alias="armemus/logo.svg">images/logo.svg</file>
+			<file alias="armemus/logo.png">images/logo.png</file>
+    </qresource>
+</RCC>

@@ -17,7 +17,7 @@
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <property name="tabBarAutoHide">
       <bool>true</bool>
@@ -52,7 +52,7 @@
               <string/>
              </property>
              <property name="pixmap">
-              <pixmap resource="../../resources/armemus.qrc">:/armemus/logo.png</pixmap>
+              <pixmap resource="../resources/armemus.qrc">:/armemus/logo.png</pixmap>
              </property>
              <property name="scaledContents">
               <bool>true</bool>
@@ -305,7 +305,7 @@
               <string/>
              </property>
              <property name="pixmap">
-              <pixmap resource="../../resources/armemus.qrc">:/armemus/logo.png</pixmap>
+              <pixmap resource="../resources/armemus.qrc">:/armemus/logo.png</pixmap>
              </property>
              <property name="scaledContents">
               <bool>true</bool>
@@ -362,31 +362,6 @@
              <item>
               <property name="text">
                <string/>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Arduino Zero</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Arduino DUE</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Feather M0 Basic Proto</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Tiva C Series TM4C123G</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Raspberry PI Zero</string>
               </property>
              </item>
             </widget>
@@ -449,7 +424,7 @@
   <tabstop>cancelButton1</tabstop>
  </tabstops>
  <resources>
-  <include location="../../resources/armemus.qrc"/>
+  <include location="../resources/armemus.qrc"/>
  </resources>
  <connections/>
 </ui>

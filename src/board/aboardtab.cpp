@@ -24,9 +24,9 @@ bool aboardtab::loadFile(const QString &fileName)
         return false;
     }
 
-    QSize availableSize = m_view->size(); //this->size();
-    double widthScale =  ((double)m_view->width()/2) / (double)availableSize.width();
-    double heightScale =  ((double)m_view->height()/2) / (double)availableSize.height();
+    QSize availableSize = this->size();
+    double widthScale =  ((double)m_view->width()) / (double)availableSize.width();
+    double heightScale =  ((double)m_view->height()) / (double)availableSize.height();
 
     m_view->scale(widthScale, heightScale);
 

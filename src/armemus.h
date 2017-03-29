@@ -1,7 +1,8 @@
 #ifndef armemus_H
 #define armemus_H
 
-#include "armemus_def.h"
+#include "adefinitions.h"
+#include "aincludes.h"
 
 namespace Ui {
 class armemus;
@@ -31,6 +32,9 @@ public slots:
 private:
     Ui::armemus *ui;
 
+    void setWorkspace();
+    void loadBoards();
+
     // Center area new project
 
     QTabWidget* tabs;
@@ -45,12 +49,10 @@ private:
 
     QTextBrowser *outputBrowser;
 
-    // Path and name project
+    bool existProject;
 
-    QString projectName;
-    QString projectPath;
-    int boardIndex;
-
+    AProjectInfo projectInfo;
+    QList<Board> boards;
 };
 
 #endif // armemus_H

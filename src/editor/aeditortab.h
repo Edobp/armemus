@@ -1,7 +1,8 @@
 #ifndef aeditortab_H
 #define aeditortab_H
 
-#include "armemus_def.h"
+#include "aincludes.h"
+#include "adefinitions.h"
 
 namespace Ui {
 class aeditortab;

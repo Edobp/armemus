@@ -1,7 +1,8 @@
 #ifndef ADirectories_H
 #define ADirectories_H
 
-#include "armemus_def.h"
+#include "aincludes.h"
+#include "adefinitions.h"
 
 namespace Ui {
 class adirectories;

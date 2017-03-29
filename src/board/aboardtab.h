@@ -1,7 +1,8 @@
 #ifndef Aboardtab_H
 #define Aboardtab_H
 
-#include "armemus_def.h"
+#include "aincludes.h"
+#include "adefinitions.h"
 
 class SvgView;
 
