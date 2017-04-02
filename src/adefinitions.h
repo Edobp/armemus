@@ -9,17 +9,19 @@
 
 // ARMEmuS typedef
 
+enum BoardType {ArduinoDue, ArduinoZero, Feather, Tiva};
+
 typedef struct
 {
     QString name;
-    QString path;
+    QString path;    
     int boardIndex;
 }AProjectInfo;
 
 typedef struct
 {
     QString name;
-    QString image;
+    QString image;    
 }Board;
 
 

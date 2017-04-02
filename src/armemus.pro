@@ -29,7 +29,8 @@ SOURCES +=\
     project/aproject.cpp \
     project/abuild.cpp \
     project/adirectories.cpp \
-    project/asymbols.cpp
+    project/asymbols.cpp \
+    editor/textedit.cpp
 
 HEADERS  += \
     armemus.h \
@@ -44,7 +45,8 @@ HEADERS  += \
     project/adirectories.h \
     project/asymbols.h \
     aincludes.h \
-    adefinitions.h
+    adefinitions.h \
+    editor/textedit.h
 
 FORMS    += \
     armemus.ui \

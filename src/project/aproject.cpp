@@ -13,15 +13,9 @@ aproject::aproject(QWidget *parent, QList<Board> boards) :
     ui->setupUi(this);
 
     ui->tabWidget->tabBar()->hide();
-    ui->tabWidget->setCurrentIndex(0);
 
-    ui->pathLineEdit->setText(QStandardPaths::standardLocations(QStandardPaths::HomeLocation).last());
-
+    clear();
     ui->nameLineEdit->setFocus();
-
-    projectName.clear();
-    projectPath.clear();
-    boardIndex=0;
 
     /************************************************
      *  Connects signals - slots ARMEmuS New Project
@@ -55,15 +49,26 @@ void aproject::actionCancel()
     ui->pathLineEdit->clear();
     ui->nameLineEdit->clear();
     ui->boardComboBox->setCurrentIndex(0);
+
     this->close();
+
 }
 
 void aproject::clear()
 {
+    projectName.clear();    
+    projectPath.clear();    
+    boardIndex=0;
+
+    filePath.clear();
+    extFile.clear();
+
     ui->nameLineEdit->clear();
     ui->boardComboBox->setCurrentIndex(0);
     ui->tabWidget->setCurrentIndex(0);
+
     ui->pathLineEdit->setText(QStandardPaths::standardLocations(QStandardPaths::HomeLocation).last());
+
 }
 
 /* ******************************************************************************************
@@ -116,7 +121,7 @@ void aproject::actionFinish()
     boardIndex = ui->boardComboBox->currentIndex();
 
     // Create folder that contains the project
-    QDir dir(projectPath+"/"+projectName);
+    QDir dir(projectPath+"/"+projectName);    
 
     if (!dir.exists()) {
         dir.mkpath(".");
@@ -126,6 +131,27 @@ void aproject::actionFinish()
     QXmlStreamWriter xmlWriter;
 
     QFile file(projectPath+"/"+projectName+"/"+projectName+".apf");
+
+    //Overwrite project and folders if user accepts
+
+    if(file.exists()){
+        const QMessageBox::StandardButton sel =
+                QMessageBox::question(this,
+                                      tr(APROJECT_NAME),
+                                      tr("Project \"")+projectName+".apf"+tr("\" already exists\nDo you want to overwrite it?"));
+        switch (sel) {
+        case QMessageBox::Yes:
+            clearProjectFiles();
+            break;
+        case QMessageBox::No:
+            ui->tabWidget->setCurrentIndex(0);
+            return;
+        default:
+            break;
+        }
+    }
+
+//--------------------------------------------------------------------------------------------------------
 
     if (!file.open(QIODevice::WriteOnly)){
         QMessageBox::warning(0, "Error!", "Error opening file");
@@ -170,6 +196,29 @@ void aproject::actionFinish()
         xmlWriter.writeEndDocument();
     }
 
+    dir.mkpath("Build");
+
+    QString Fuente;
+    QString Destino;
+
+    switch (boardIndex-1) {
+    case ArduinoDue:
+    case ArduinoZero:
+    case Feather:
+        Fuente=":/files/Arduino/Arduino";
+        Destino=projectPath+"/"+projectName;
+        extFile=".ino";
+        break;
+    case Tiva:        
+        Fuente=":/files/Tiva/Tiva";
+        Destino=projectPath+"/"+projectName;
+        extFile=".cpp";
+        break;
+    default:
+        break;
+    }
+
+    copyPath(Fuente, Destino);
     this->close();
 }
 
@@ -179,6 +228,73 @@ void aproject::actionFinish()
 void aproject::getInfo(AProjectInfo &info)
 {
     info.name = projectName;
-    info.path = projectPath;
+    info.path = projectPath;    
     info.boardIndex = boardIndex-1;
 }
+
+
+void aproject::copyPath(QString src,  QString dst)
+{
+
+    QDirIterator Folders(src,QDir::Dirs | QDir::NoDotAndDotDot);
+
+    QDir dir(dst);
+
+    if(!dir.exists())
+        dir.mkpath(".");
+
+    while(Folders.hasNext())
+    {
+        Folders.next();
+        if(Folders.fileName()=="template")
+            copyPath(src+QDir::separator()+Folders.fileName(),dst+QDir::separator()+projectName);
+        else
+            copyPath(src+QDir::separator()+Folders.fileName(),dst+QDir::separator()+Folders.fileName());
+    }    
+
+    QDirIterator Files(src,QDir::Files);
+
+    while(Files.hasNext())
+    {
+        Files.next();
+        if(Files.fileName()=="template"){
+            filePath=dst+QDir::separator()+projectName+extFile;
+            QFile::copy(Files.filePath(),filePath);
+            QFile::setPermissions(filePath, QFile::WriteOwner | QFile::ReadOwner);
+
+        }
+        else{
+            QFile::copy(Files.filePath(),dst+QDir::separator()+Files.fileName());
+            QFile::setPermissions(dst+QDir::separator()+Files.fileName(), QFile::WriteOwner | QFile::ReadOwner);
+        }
+    }
+}
+
+void aproject::getFilePath(QString &file)
+{
+    file=filePath;
+}
+
+void aproject::clearProjectFiles()
+{
+    QDir dir;
+
+    //remove apf
+
+    QFile::remove(projectPath+"/"+projectName+"/"+projectName+".apf");
+
+    //remove all folders of previous project with their contents
+
+    QDirIterator Folders(projectPath+"/"+projectName,QDir::Dirs | QDir::NoDotAndDotDot);
+
+    while (Folders.hasNext())
+    {
+        Folders.next();        
+        if((Folders.fileName()=="Build")||(Folders.fileName()==projectName)||(Folders.fileName()=="Tiva Files")){
+            dir.setPath(Folders.filePath());            
+            dir.removeRecursively();
+        }
+    }
+}
+
+

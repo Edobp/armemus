@@ -4,7 +4,9 @@
 #include "aincludes.h"
 #include "adefinitions.h"
 
-class aeditor : public QTextEdit
+#include "textedit.h"
+
+class aeditor : public TextEdit
 {
     Q_OBJECT
 
@@ -20,7 +22,7 @@ public:
     QString currentFile() { return curFile; }
     bool isFileLoad();
     void isFileLoad(bool load);
-    bool closeEditor();
+    bool closeEditor();    
 
 protected:
 
@@ -28,7 +30,7 @@ private slots:
     void documentWasModified();
 
 private:
-    bool maybeSave();
+    bool maybeSave();    
     void setCurrentFile(const QString &fileName);
     QString strippedName(const QString &fullFileName);
 

@@ -4,6 +4,9 @@
 #include "aincludes.h"
 #include "adefinitions.h"
 
+#include <QDirIterator>
+#include <QFile>
+
 namespace Ui {
 class aproject;
 }
@@ -17,6 +20,7 @@ public:
     ~aproject();
 
     void getInfo(AProjectInfo &info);
+    void getFilePath(QString &file);
     void clear();
 
 private slots:    
@@ -32,9 +36,15 @@ private slots:
 private:
     Ui::aproject *ui;
 
-    QString projectName;
+    QString projectName;    
     QString projectPath;
     int boardIndex;
+
+    QString filePath;
+    QString extFile;
+
+    void copyPath(QString src,  QString dst);
+    void clearProjectFiles();
 };
 
 #endif // Aproject_H

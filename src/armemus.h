@@ -14,26 +14,32 @@ class armemus : public QMainWindow
 
 public:
     explicit armemus(QWidget *parent = 0);
-    ~armemus();
+    ~armemus();    
 
 public slots:
     void actionNew();
     void actionNewFile();
     void actionOpen();
     void actionOpenFile();
-    void actionSave();
+    bool actionSave();
     void actionHelp();
     void actionAbout();
     void actionCloseFile();
     void actionCloseProject();
     void actionExit();
     void actionBuildOptions();
+    void actionBuild();    
 
 private:
     Ui::armemus *ui;
 
-    void setWorkspace();
-    void loadBoards();
+
+    //Workspace settings
+
+    inline void DisableButtons();    
+    inline void clearWorkspace();
+    inline void setWorkspace();
+    void loadBoards();    
 
     // Center area new project
 
@@ -50,9 +56,26 @@ private:
     QTextBrowser *outputBrowser;
 
     bool existProject;
+    bool editorStatus[2];  //indice 0: indica existencia de pestañas; indice 1: indica si hay archivos sin guardar
+    int tabUnsaved;
 
     AProjectInfo projectInfo;
     QList<Board> boards;
+
+    QString FileBoard;
+
+    //Process
+
+    QProcess BuildProcess;
+
+    //Print Process
+
+    void  printBuildProcess();
+
+    //App events
+    void update_editorStatus();
+    bool confirmSave();
+    void closeEvent (QCloseEvent *event);
 };
 
 #endif // armemus_H

@@ -34,7 +34,7 @@ bool aeditor::saveAs()
 {
     QString fileName = QFileDialog::getSaveFileName(this, tr("Save As"),curFile);
     if (fileName.isEmpty())
-        return false;
+        return false;    
     return saveFile(fileName);
 }
 

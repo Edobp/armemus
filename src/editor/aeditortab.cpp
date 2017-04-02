@@ -1,13 +1,23 @@
 #include "aeditortab.h"
 #include "ui_aeditortab.h"
 
-aeditortab::aeditortab(QWidget *parent) :
+aeditortab::aeditortab(int Index, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::aeditortab)
 {
     ui->setupUi(this);
 
     connect(ui->tabWidget, &QTabWidget::tabCloseRequested, this, &aeditortab::tabCloseRequested);
+
+    BoardIndex=Index;
+    EditorSettings(BoardIndex);
+
+    completer = new QCompleter(this);
+    completer->setModel(modelFromFile(BoardKey));
+    completer->setModelSorting(QCompleter::CaseInsensitivelySortedModel);
+    completer->setCaseSensitivity(Qt::CaseInsensitive);
+    completer->setWrapAround(false);
+
 }
 
 aeditortab::~aeditortab()
@@ -16,24 +26,22 @@ aeditortab::~aeditortab()
 }
 
 void aeditortab::newFile()
-{
-    QFont font;
-    aeditor *editor = createAEditor();
-
-    font.setFamily("Babel");
-    font.setFixedPitch(true);
-    font.setPointSize(11);
+{    
+    aeditor *editor = createAEditor();    
 
     editor->setFont(font);
     editor->newFile();
+    editor->setCompleter(completer);
 
-    highlighter = new Highlighter(editor->document());
+    highlighter = new Highlighter(BoardIndex,editor->document());
     textEdit = qobject_cast<QTextEdit*>(ui->tabWidget->currentWidget());
 
-    ui->tabWidget->insertTab(ui->tabWidget->count(),editor,QString(editor->userFriendlyCurrentFile()));
+    ui->tabWidget->insertTab(ui->tabWidget->count(),editor,QString(editor->userFriendlyCurrentFile()));    
     ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
 
+
     connect(editor->document(), &QTextDocument::contentsChanged, this, &aeditortab::asterisk);
+
 }
 
 
@@ -68,23 +76,22 @@ bool aeditortab::findFile(const QString &fileName)
 
 bool aeditortab::loadFile(const QString &fileName)
 {
-    QFont font;
+
     aeditor *editor = createAEditor();
 
-    ui->tabWidget->insertTab(ui->tabWidget->count(),editor,QFileInfo(fileName).fileName());
-    ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
+    ui->tabWidget->insertTab(ui->tabWidget->count(),editor,QFileInfo(fileName).fileName());    
+    ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);        
 
-    font.setFamily("Babel");
-    font.setFixedPitch(true);
-    font.setPointSize(11);
     editor->setFont(font);
+    editor->setCompleter(completer);
 
-    highlighter = new Highlighter(editor->document());
-    textEdit = qobject_cast<aeditor*>(ui->tabWidget->currentWidget());
+    highlighter = new Highlighter(BoardIndex, editor->document());
+    textEdit = qobject_cast<aeditor*>(ui->tabWidget->currentWidget());    
+
+    const bool succeeded = editor->loadFile(fileName);
 
     connect(editor->document(), &QTextDocument::contentsChanged, this, &aeditortab::asterisk);
 
-    const bool succeeded = editor->loadFile(fileName);
     if (succeeded)
         editor->show();
     else
@@ -101,14 +108,15 @@ void aeditortab::asterisk()
     aeditor *editor = activeAEditor();
 
     if(editor->isFileLoad()){
-        QString nameFile = ui->tabWidget->tabText(ui->tabWidget->currentIndex());
+        QString nameFile = ui->tabWidget->tabText(ui->tabWidget->currentIndex());        
         if(nameFile.endsWith("*"))
            ui->tabWidget->setTabText(ui->tabWidget->currentIndex(),nameFile);
         else
            ui->tabWidget->setTabText(ui->tabWidget->currentIndex(),nameFile.insert(nameFile.size(),"*"));
     }
 
-    editor->isFileLoad(true);
+    editor->isFileLoad(true);    
+
 }
 
 aeditor *aeditortab::activeAEditor()
@@ -145,4 +153,101 @@ void aeditortab::tabClose()
         ui->tabWidget->removeTab(ui->tabWidget->currentIndex());
     }
 
+}
+
+
+//-----------------------------------------------------
+
+bool aeditortab::save()
+
+{
+    bool saveFile;
+
+    aeditor *editor = activeAEditor();
+
+    saveFile=editor->save();
+
+    if(saveFile)
+        ui->tabWidget->setTabText(ui->tabWidget->currentIndex(),QFileInfo(editor->currentFile()).fileName());
+
+    return saveFile;
+}
+
+void aeditortab::EditorSettings(int BoardIndex)
+{
+    switch (BoardIndex) {    
+    case ArduinoDue:
+    case ArduinoZero:
+    case Feather:                
+        font.setFamily("Monospaced");
+        font.setFixedPitch(true);
+        font.setPointSize(12);
+        BoardKey=":/files/Arduino/autoComplete.txt";
+        break;
+    case Tiva:
+        font.setFamily("Babel");
+        font.setFixedPitch(true);
+        font.setPointSize(11);
+        BoardKey=":/files/Tiva/autoComplete.txt";
+        break;
+    default:
+        break;
+    }
+
+}
+
+void aeditortab::update_editorStatus(bool *editorStatus, int &tabUnsaved)
+{
+
+
+    if(ui->tabWidget->count()>0){
+
+        editorStatus[0]=true;        
+
+        for (int i=0; i<=ui->tabWidget->count();i++){            
+            if(ui->tabWidget->tabText(i).contains('*')){
+                editorStatus[1]=true;
+                tabUnsaved=i;
+                break;
+            }
+            else{                
+                editorStatus[1]=false;
+                tabUnsaved=-1;
+            }
+        }
+    }
+    else{
+        editorStatus[0]=false;  //confirma existencia de pestañas
+        editorStatus[1]=false;  //confirma si hay archivos sin guardar
+    }    
+}
+
+void aeditortab::findtabUnsaved(int tabIndex)
+{
+    ui->tabWidget->setCurrentIndex(tabIndex);
+}
+
+//Para completer
+
+QAbstractItemModel *aeditortab::modelFromFile(const QString& fileName)
+{
+    QFile file(fileName);
+    if (!file.open(QFile::ReadOnly))
+        return new QStringListModel(completer);
+
+#ifndef QT_NO_CURSOR
+    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+#endif
+    QStringList words;
+
+    while (!file.atEnd()) {
+        QByteArray line = file.readLine();
+        if (!line.isEmpty())
+            words << line.trimmed();
+    }
+
+#ifndef QT_NO_CURSOR
+    QApplication::restoreOverrideCursor();
+#endif
+    return new QStringListModel(words, completer);
 }

@@ -54,8 +54,61 @@
 #include <QDebug>
 #include <QResource>
 
-Highlighter::Highlighter(QTextDocument *parent)
+Highlighter::Highlighter(int BoardIndex, QTextDocument *parent)
     : QSyntaxHighlighter(parent)
+{
+
+    switch (BoardIndex) {    
+    case ArduinoDue:
+    case ArduinoZero:
+    case Feather:
+        ArduinoHighlighter();
+        break;
+    case Tiva:
+        TivaHighlighter();
+        break;
+    default:
+        break;
+    }
+    //ArduinoHighlighter();
+}
+
+void Highlighter::highlightBlock(const QString &text)
+{
+    foreach (const HighlightingRule &rule, highlightingRules) {
+        QRegExp expression(rule.pattern);
+        int index = expression.indexIn(text);
+        while (index >= 0) {
+            int length = expression.matchedLength();
+            setFormat(index, length, rule.format);
+            index = expression.indexIn(text, index + length);
+        }
+    }
+    setCurrentBlockState(0);
+
+    int startIndex = 0;
+    if (previousBlockState() != 1)
+        startIndex = commentStartExpression.indexIn(text);
+
+    while (startIndex >= 0) {
+        int endIndex = commentEndExpression.indexIn(text, startIndex);
+        int commentLength;
+        if (endIndex == -1) {
+            setCurrentBlockState(1);
+            commentLength = text.length() - startIndex;
+        } else {
+            commentLength = endIndex - startIndex
+                            + commentEndExpression.matchedLength();
+        }
+        setFormat(startIndex, commentLength, multiLineCommentFormat);
+        startIndex = commentStartExpression.indexIn(text, startIndex + commentLength);
+    }
+}
+
+//----------------------------------TIVA----------------------------------//
+
+void Highlighter::TivaHighlighter()
+
 {
     HighlightingRule rule, rule2;
 
@@ -63,7 +116,7 @@ Highlighter::Highlighter(QTextDocument *parent)
     keywordFormat.setFontWeight(QFont::Bold);
 
     QStringList keywordPatterns;
-    QFile file(":/files/keyWords.txt");
+    QFile file(":/files/Tiva/keyWords.txt");
 
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
         qDebug() << "Error al leer archivo";
@@ -107,11 +160,11 @@ Highlighter::Highlighter(QTextDocument *parent)
     commentStartExpression = QRegExp("/\\*");
     commentEndExpression = QRegExp("\\*/");
 
-    keywordFormat2.setForeground(Qt::darkYellow);
-    keywordFormat2.setFontWeight(QFont::Helvetica);
+    keywordFormat.setForeground(Qt::darkYellow);
+    keywordFormat.setFontWeight(QFont::Helvetica);
     QStringList keywordPatterns2;
     //QString fileName2 = ;
-    QFile file2(":/files/keyWords2.txt");
+    QFile file2(":/files/Tiva/keyWords2.txt");
     if (!file2.open(QIODevice::ReadOnly | QIODevice::Text))
         qDebug() << "Error al leer archivo";
     QTextStream textStream2(&file2);
@@ -121,7 +174,7 @@ Highlighter::Highlighter(QTextDocument *parent)
 
     foreach (const QString &pattern2, keywordPatterns2) {
         rule2.pattern = QRegExp(pattern2);
-        rule2.format = keywordFormat2;
+        rule2.format = keywordFormat;
         highlightingRules.append(rule2);
     }
     /*functionFormat2.setFontItalic(true);
@@ -131,34 +184,118 @@ Highlighter::Highlighter(QTextDocument *parent)
     highlightingRules.append(rule);*/
 }
 
-void Highlighter::highlightBlock(const QString &text)
+//----------------------------------ARDUINO----------------------------------//
+
+void Highlighter::ArduinoHighlighter()
+
 {
-    foreach (const HighlightingRule &rule, highlightingRules) {
-        QRegExp expression(rule.pattern);
-        int index = expression.indexIn(text);
-        while (index >= 0) {
-            int length = expression.matchedLength();
-            setFormat(index, length, rule.format);
-            index = expression.indexIn(text, index + length);
-        }
-    }
-    setCurrentBlockState(0);
+    HighlightingRule rule1, rule2, rule3;
 
-    int startIndex = 0;
-    if (previousBlockState() != 1)
-        startIndex = commentStartExpression.indexIn(text);
 
-    while (startIndex >= 0) {
-        int endIndex = commentEndExpression.indexIn(text, startIndex);
-        int commentLength;
-        if (endIndex == -1) {
-            setCurrentBlockState(1);
-            commentLength = text.length() - startIndex;
-        } else {
-            commentLength = endIndex - startIndex
-                            + commentEndExpression.matchedLength();
-        }
-        setFormat(startIndex, commentLength, multiLineCommentFormat);
-        startIndex = commentStartExpression.indexIn(text, startIndex + commentLength);
+    keywordFormat.setForeground(QColor("#D35400"));    
+
+    QStringList keywordPatterns;
+    QFile file(":/files/Arduino/Ard_Key_1_2.txt");
+
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        qDebug() << "Error al leer archivo";
+
+    QTextStream textStream(&file);
+
+    while (!textStream.atEnd())
+        keywordPatterns << textStream.readLine();
+    file.close();
+
+    foreach (const QString &pattern, keywordPatterns) {
+        rule1.pattern = QRegExp(pattern);
+        rule1.format = keywordFormat;
+        highlightingRules.append(rule1);
     }
+
+    classFormat.setForeground(Qt::black);
+    rule1.pattern = QRegExp("\\bQ[A-Za-z]+\\b");
+    rule1.format = classFormat;
+    highlightingRules.append(rule1);
+
+    singleLineCommentFormat.setForeground(Qt::darkGray);    
+
+    rule1.pattern = QRegExp("//[^\n]*");
+    rule1.format = singleLineCommentFormat;
+    highlightingRules.append(rule1);
+
+    multiLineCommentFormat.setForeground(Qt::darkGray);    
+
+    quotationFormat.setForeground(Qt::darkGray);
+
+    rule1.pattern = QRegExp("\".*\"");
+    rule1.format = quotationFormat;
+    highlightingRules.append(rule1);
+
+    functionFormat.setForeground(QColor("#D35400"));
+    rule1.pattern = QRegExp("\\b[A-Za-z0-9_.]+(?=\\()");
+    rule1.format = functionFormat;    
+
+    commentStartExpression = QRegExp("/\\*");
+    commentEndExpression = QRegExp("\\*/");
+
+    //--------------------------------------------------------------------
+
+    keywordFormat.setForeground(QColor("#728E00"));    
+
+    QStringList keywordPatterns2;
+    QFile file2(":/files/Arduino/Ard_Key_3.txt");
+
+    if (!file2.open(QIODevice::ReadOnly | QIODevice::Text))
+        qDebug() << "Error al leer archivo";
+
+    QTextStream textStream2(&file2);
+
+    while (!textStream2.atEnd())
+        keywordPatterns2 << textStream2.readLine();
+    file2.close();
+
+    foreach (const QString &pattern2, keywordPatterns2) {
+        rule2.pattern = QRegExp(pattern2);
+        rule2.format = keywordFormat;
+        highlightingRules.append(rule2);
+    }
+
+    rule2.pattern = QRegExp("//[^\n]*");
+    rule2.format = singleLineCommentFormat;
+    highlightingRules.append(rule2);
+
+    functionFormat.setForeground(QColor("#728E00"));
+    rule2.pattern = QRegExp("\\b[A-Za-z0-9_.]+(?=\\()");
+    rule2.format = functionFormat;    
+
+    //--------------------------------------------------------------------
+
+    keywordFormat.setForeground(QColor("#00979C"));
+    keywordFormat.setFontWeight(QFont::Normal);
+
+    QStringList keywordPatterns3;
+    QFile file3(":/files/Arduino/Ard_Lit.txt");
+
+    if (!file3.open(QIODevice::ReadOnly | QIODevice::Text))
+        qDebug() << "Error al leer archivo";
+
+    QTextStream textStream3(&file3);
+
+    while (!textStream3.atEnd())
+        keywordPatterns3 << textStream3.readLine();
+    file3.close();
+
+    foreach (const QString &pattern3, keywordPatterns3) {
+        rule3.pattern = QRegExp(pattern3);
+        rule3.format = keywordFormat;
+        highlightingRules.append(rule3);
+    }
+
+    rule3.pattern = QRegExp("//[^\n]*");
+    rule3.format = singleLineCommentFormat;
+    highlightingRules.append(rule3);
+
+    functionFormat.setForeground(QColor("#00979C"));
+    rule3.pattern = QRegExp("\\b[A-Za-z0-9_.]+(?=\\()");
+    rule3.format = functionFormat;    
 }

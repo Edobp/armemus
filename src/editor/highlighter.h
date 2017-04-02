@@ -50,6 +50,8 @@
 #ifndef HIGHLIGHTER_H
 #define HIGHLIGHTER_H
 
+#include "adefinitions.h"
+
 #include <QSyntaxHighlighter>
 #include <QTextCharFormat>
 
@@ -60,7 +62,7 @@ class Highlighter : public QSyntaxHighlighter
     Q_OBJECT
 
 public:
-    Highlighter(QTextDocument *parent = 0);
+    Highlighter(int BoardIndex, QTextDocument *parent = 0);
 
 protected:
     void highlightBlock(const QString &text) Q_DECL_OVERRIDE;
@@ -83,8 +85,14 @@ private:
     QTextCharFormat quotationFormat;
     QTextCharFormat functionFormat;
 
-    QTextCharFormat keywordFormat2;
+    /*QTextCharFormat keywordFormat2;
     QTextCharFormat functionFormat2;
+
+    QTextCharFormat keywordFormat3;
+    QTextCharFormat functionFormat3;*/
+
+    void ArduinoHighlighter();
+    void TivaHighlighter();
 };
 
 #endif // HIGHLIGHTER_H

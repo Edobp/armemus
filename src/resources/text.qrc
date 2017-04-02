@@ -1,6 +1,19 @@
 <RCC>
     <qresource prefix="/">
-        <file>files/keyWords.txt</file>
-        <file>files/keyWords2.txt</file>
+        <file>files/Arduino/Ard_Key_1_2.txt</file>
+        <file>files/Arduino/Ard_Key_3.txt</file>
+        <file>files/Arduino/Ard_Lit.txt</file>
+        <file>files/Arduino/autoComplete.txt</file>
+        <file>files/Tiva/autoComplete.txt</file>
+        <file>files/Tiva/keyWords.txt</file>
+        <file>files/Tiva/keyWords2.txt</file>
+        <file>files/Tiva/Tiva/Tiva Files/TM4C123GH6PM.ld</file>
+        <file>files/Tiva/Tiva/Tiva Files/README.md</file>
+        <file>files/Tiva/Tiva/Tiva Files/Makefile</file>
+        <file>files/Tiva/Tiva/Tiva Files/src/main.c</file>
+        <file>files/Tiva/Tiva/Tiva Files/src/startup_gcc.c</file>
+        <file>files/Tiva/Tiva/Tiva Files/src/tm4c123gh6pm.h</file>
+        <file>files/Arduino/Arduino/template/template</file>
+        <file>files/Tiva/Tiva/template/template</file>
     </qresource>
 </RCC>

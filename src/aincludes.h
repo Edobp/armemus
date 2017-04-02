@@ -21,6 +21,10 @@
 #include <QTreeWidgetItem>
 #include <QWidget>
 
+#include <QCompleter>
+#include <QAbstractItemModel>
+#include <QProcess>
+
 // ARMEmuS Include files
 
 #include "board/svgview.h"
