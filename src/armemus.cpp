@@ -27,8 +27,6 @@ armemus::armemus(QWidget *parent) :
     connect(ui->actionOpenFile, &QAction::triggered, this, &armemus::actionOpenFile);
     connect(ui->actionCloseFile, &QAction::triggered, this, &armemus::actionCloseFile);    
 
-
-    //connect(ui->actionBuild, &QAction::triggered, this, &armemus::actionSave);
     connect(ui->actionBuild, &QAction::triggered, this, &armemus::actionBuild);
     connect(&BuildProcess, &QProcess::readyRead, this, &armemus::printBuildProcess);    
 
@@ -104,10 +102,10 @@ bool armemus::actionSave()
 
     if(editorStatus[1]){
         editor->findtabUnsaved(tabUnsaved);        
-        if(!editor->save())
-            return false;
-        else
+        if(editor->save())
             return this->actionSave();
+        else
+            return false;
     }
 
     statusBar()->showMessage(tr("Project saved"), 3000);
@@ -175,14 +173,11 @@ void armemus::actionCloseProject()
 {
     update_editorStatus();
 
-    if(editorStatus[0]){
-        if(confirmSave())
-            clearWorkspace();
-        else
+    if(editorStatus[0])
+        if(!confirmSave())
             return;
-    }
-    else
-        clearWorkspace();
+
+    clearWorkspace();
 }
 
 void armemus::actionCloseFile()
@@ -299,17 +294,15 @@ bool armemus::confirmSave()
                                       tr("Some files have been modified\nDo you want to save before closing it?"));
         switch (sel) {
         case QMessageBox::Yes:
-            if(this->actionSave())
-                return true;
-            else
-                return false;
-        case QMessageBox::No:
+            if(!this->actionSave())
+                return false;            
+        case QMessageBox::No:                        
             break;
-                return true;
         default:
             break;
         }
     }
+
     return true;
 }
 
