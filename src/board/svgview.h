@@ -87,5 +87,7 @@ private:
     QImage m_image;
 
     qreal m_originX, m_originY;
+
+    void drawPin();
 };
 #endif // SVGVIEW_H

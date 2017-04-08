@@ -23,7 +23,6 @@
 
 #include <QCompleter>
 #include <QAbstractItemModel>
-#include <QProcess>
 
 // ARMEmuS Include files
 

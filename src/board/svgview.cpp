@@ -117,6 +117,9 @@ bool SvgView::openFile(const QString &fileName)
 
     s->addItem(m_backgroundItem);
     s->addItem(m_svgItem);
+
+    drawPin();
+
     //s->addItem(m_outlineItem);
 
     //s->setSceneRect(m_outlineItem->boundingRect().adjusted(-1, -1, 1, 1));
@@ -222,4 +225,20 @@ QSvgRenderer *SvgView::renderer() const
     if (m_svgItem)
         return m_svgItem->renderer();
     return nullptr;
+}
+
+void SvgView::drawPin()
+{
+    double x, y, w, h;
+
+    x=142.1;
+    y=15.28;
+
+    w=7;  //Ancho
+    h=7;  //Alto
+
+    QGraphicsRectItem *ptr_pin=new QGraphicsRectItem(x, y, w, h, m_svgItem);
+
+    ptr_pin->setPen(Qt::NoPen);
+    ptr_pin->setBrush(Qt::green);
 }

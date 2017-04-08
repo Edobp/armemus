@@ -204,7 +204,7 @@ void aproject::actionFinish()
     switch (boardIndex-1) {
     case ArduinoDue:
     case ArduinoZero:
-    case Feather:
+    case Feather:        
         Fuente=":/files/Arduino/Arduino";
         Destino=projectPath+"/"+projectName;
         extFile=".ino";
@@ -212,7 +212,7 @@ void aproject::actionFinish()
     case Tiva:        
         Fuente=":/files/Tiva/Tiva";
         Destino=projectPath+"/"+projectName;
-        extFile=".cpp";
+        extFile=".c";
         break;
     default:
         break;
@@ -257,8 +257,13 @@ void aproject::copyPath(QString src,  QString dst)
     while(Files.hasNext())
     {
         Files.next();
-        if(Files.fileName()=="template"){
-            filePath=dst+QDir::separator()+projectName+extFile;
+
+        if(Files.fileName()=="template" || Files.fileName()=="main"){
+            if(extFile==".c")
+                filePath=dst+QDir::separator()+"main"+extFile;
+            else
+                filePath=dst+QDir::separator()+projectName+extFile;
+
             QFile::copy(Files.filePath(),filePath);
             QFile::setPermissions(filePath, QFile::WriteOwner | QFile::ReadOwner);
 
@@ -290,7 +295,7 @@ void aproject::clearProjectFiles()
     while (Folders.hasNext())
     {
         Folders.next();        
-        if((Folders.fileName()=="Build")||(Folders.fileName()==projectName)||(Folders.fileName()=="Tiva Files")){
+        if((Folders.fileName()=="Build")||(Folders.fileName()==projectName)){
             dir.setPath(Folders.filePath());            
             dir.removeRecursively();
         }

@@ -28,7 +28,7 @@ armemus::armemus(QWidget *parent) :
     connect(ui->actionCloseFile, &QAction::triggered, this, &armemus::actionCloseFile);    
 
     connect(ui->actionBuild, &QAction::triggered, this, &armemus::actionBuild);
-    connect(&BuildProcess, &QProcess::readyRead, this, &armemus::printBuildProcess);    
+    connect(&BuildProcess, &QProcess::readyRead, this, &armemus::printBuildProcess);
 
     existProject = false;    
 
@@ -117,8 +117,6 @@ void armemus::actionHelp()
 {
     QMessageBox Help (this);
 
-    Help.setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
-
     Help.information(this,tr("Help"),tr("Help Menu"));
 }
 
@@ -152,18 +150,23 @@ void armemus::actionBuild()
     outputBrowser->clear();
 
     QString root = "/home/malo";
-    QString ABuilder = "/Escritorio/Arduino Builder/";    
+    QString Builder = "/Escritorio/Builders/Arduino Builder/";
 
     QString path_File(FileBoard);
     QString path_Build = projectInfo.path+"/"+projectInfo.name+"/Build";
 
     switch (projectInfo.boardIndex) {
     case ArduinoDue:
-        BuildProcess.start(root+ABuilder+"arduino-builder", QStringList()<<"-compile"<<"-logger"<<"machine"<<"-hardware"<<root+ABuilder+"hardware"<<"-hardware"<<root+ABuilder+"arduino-packages/packages"<<"-tools"<<root+ABuilder+"tools-builder"<<"-tools"<<root+ABuilder+"hardware/tools/avr"<<"-tools"<<root+ABuilder+"arduino-packages/packages"<<"-built-in-libraries"<<root+ABuilder+"libraries"<<"-libraries"<<root+ABuilder+"Arduino/libraries"<<"-fqbn"<<"arduino:sam:arduino_due_x"<<"-build-path"<<path_Build<<"-warnings"<<"none"<<"-prefs"<<"build.warn_data_percentage=75"<<"-prefs"<<"-runtime.tools.bossac.path="+root+ABuilder+"arduino-packages/packages/arduino/tools/bossac/1.6.1-arduino"<<"-prefs"<<"runtime.tools.arm-none-eabi-gcc.path="+root+ABuilder+"arduino-packages/packages/arduino/tools/arm-none-eabi-gcc/4.8.3-2014q1"<<"-verbose"<<path_File);
+        BuildProcess.start(root+Builder+"arduino-builder", QStringList()<<"-compile"<<"-logger"<<"machine"<<"-hardware"<<root+Builder+"hardware"<<"-hardware"<<root+Builder+"arduino-packages/packages"<<"-tools"<<root+Builder+"tools-builder"<<"-tools"<<root+Builder+"hardware/tools/avr"<<"-tools"<<root+Builder+"arduino-packages/packages"<<"-built-in-libraries"<<root+Builder+"libraries"<<"-libraries"<<root+Builder+"Arduino/libraries"<<"-fqbn"<<"arduino:sam:arduino_due_x"<<"-build-path"<<path_Build<<"-warnings"<<"none"<<"-prefs"<<"build.warn_data_percentage=75"<<"-prefs"<<"-runtime.tools.bossac.path="+root+Builder+"arduino-packages/packages/arduino/tools/bossac/1.6.1-arduino"<<"-prefs"<<"runtime.tools.arm-none-eabi-gcc.path="+root+Builder+"arduino-packages/packages/arduino/tools/arm-none-eabi-gcc/4.8.3-2014q1"<<"-verbose"<<path_File);
         break;
-    case ArduinoZero:
-        BuildProcess.start(root+ABuilder+"arduino-builder", QStringList()<<"-compile"<<"-logger"<<"machine"<<"-hardware"<<root+ABuilder+"hardware"<<"-hardware"<<root+ABuilder+"arduino-packages/packages"<<"-tools"<<root+ABuilder+"tools-builder"<<"-tools"<<root+ABuilder+"hardware/tools/avr"<<"-tools"<<root+ABuilder+"arduino-packages/packages"<<"-built-in-libraries"<<root+ABuilder+"libraries"<<"-libraries"<<root+ABuilder+"Arduino/libraries"<<"-fqbn"<<"arduino:samd:arduino_zero_native"<<"-build-path"<<path_Build<<"-warnings"<<"none"<<"-prefs"<<"build.warn_data_percentage=75"<<"-prefs"<<"-runtime.tools.bossac.path="+root+ABuilder+"arduino-packages/packages/arduino/tools/bossac/1.7.0"<<"-prefs"<<"runtime.tools.arm-none-eabi-gcc.path="+root+ABuilder+"arduino-packages/packages/arduino/tools/arm-none-eabi-gcc/4.8.3-2014q1"<<"-prefs"<<"runtime.tools.openocd.path="+root+ABuilder+"arduino-packages/packages/arduino/tools/openocd/0.9.0-arduino"<<"-prefs"<<"runtime.tools.CMSIS.path="+root+ABuilder+"arduino-packages/packages/arduino/tools/CMSIS/4.0.0-atmel"<<"-verbose"<<path_File);        
+    case ArduinoZero:        
+        BuildProcess.start(root+Builder+"arduino-builder", QStringList()<<"-compile"<<"-logger"<<"machine"<<"-hardware"<<root+Builder+"hardware"<<"-hardware"<<root+Builder+"arduino-packages/packages"<<"-tools"<<root+Builder+"tools-builder"<<"-tools"<<root+Builder+"hardware/tools/avr"<<"-tools"<<root+Builder+"arduino-packages/packages"<<"-built-in-libraries"<<root+Builder+"libraries"<<"-libraries"<<root+Builder+"Arduino/libraries"<<"-fqbn"<<"arduino:samd:arduino_zero_native"<<"-build-path"<<path_Build<<"-warnings"<<"none"<<"-prefs"<<"build.warn_data_percentage=75"<<"-prefs"<<"-runtime.tools.bossac.path="+root+Builder+"arduino-packages/packages/arduino/tools/bossac/1.7.0"<<"-prefs"<<"runtime.tools.arm-none-eabi-gcc.path="+root+Builder+"arduino-packages/packages/arduino/tools/arm-none-eabi-gcc/4.8.3-2014q1"<<"-prefs"<<"runtime.tools.openocd.path="+root+Builder+"arduino-packages/packages/arduino/tools/openocd/0.9.0-arduino"<<"-prefs"<<"runtime.tools.CMSIS.path="+root+Builder+"arduino-packages/packages/arduino/tools/CMSIS/4.0.0-atmel"<<"-verbose"<<path_File);
         break;
+    case Tiva:        
+        //se debe cambiar en el archivo Makefile del resource la linea
+        //TIVAWARE_PATH = /home/malo/Escritorio/Builders/SW-EK-TM4C123GXL
+        BuildProcess.start("make", QStringList()<<"-C"<<projectInfo.path+"/"+projectInfo.name+"/"+projectInfo.name);
+        break;        
     default:
         break;
     }
@@ -195,8 +198,7 @@ void armemus::loadBoards()
     QTextStream in(&fileBoards);
     Board board;
 
-    while (!in.atEnd()) {
-        in.readLine();
+    while (!in.atEnd()) {        
         in >> board.name >> board.image;
         if( !board.name.isEmpty() )
             boards.append(board);
