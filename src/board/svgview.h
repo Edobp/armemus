@@ -43,6 +43,9 @@
 
 #include <QGraphicsView>
 
+#include "aincludes.h"
+#include "adefinitions.h"
+
 QT_BEGIN_NAMESPACE
 class QGraphicsSvgItem;
 class QSvgRenderer;
@@ -65,6 +68,11 @@ public:
 
     QSize svgSize() const;
     QSvgRenderer *renderer() const;
+    QGraphicsSvgItem *getSvgItem();
+
+signals:
+    void inputEvent();
+    void showInput();
 
 public slots:
     void setHighQualityAntialiasing(bool highQualityAntialiasing);
@@ -88,6 +96,5 @@ private:
 
     qreal m_originX, m_originY;
 
-    void drawPin();
 };
 #endif // SVGVIEW_H

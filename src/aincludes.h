@@ -29,6 +29,7 @@
 #include "board/svgview.h"
 #include "board/adebug.h"
 #include "board/aboardtab.h"
+#include "board/apainter.h"
 
 #include "editor/highlighter.h"
 #include "editor/aeditor.h"
@@ -38,6 +39,6 @@
 #include "project/asymbols.h"
 #include "project/abuild.h"
 #include "project/aproject.h"
-
+#include "project/iopins.h"
 
 #endif // AINCLUDES_H

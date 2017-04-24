@@ -5,10 +5,13 @@
 #include "adefinitions.h"
 
 class SvgView;
+class apainter;
 
 namespace Ui {
 class aboardtab;
 }
+
+
 
 class aboardtab : public QMainWindow
 {
@@ -19,12 +22,20 @@ public:
     ~aboardtab();
     bool loadFile(const QString &fileName);
 
+    apainter *Painter;
+    void turnOn();
+    void turnOff();
+
 private slots:
+    void showInput();
+    void inputEvent();
+
 
 private:
     Ui::aboardtab *ui;
 
     SvgView *m_view;
+
 };
 
 #endif // Aboardtab_H

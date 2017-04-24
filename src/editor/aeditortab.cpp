@@ -27,7 +27,7 @@ aeditortab::~aeditortab()
 
 void aeditortab::newFile()
 {    
-    aeditor *editor = createAEditor();    
+    aeditor *editor = createAEditor();
 
     editor->setFont(font);
     editor->newFile();
@@ -39,9 +39,7 @@ void aeditortab::newFile()
     ui->tabWidget->insertTab(ui->tabWidget->count(),editor,QString(editor->userFriendlyCurrentFile()));    
     ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
 
-
     connect(editor->document(), &QTextDocument::contentsChanged, this, &aeditortab::asterisk);
-
 }
 
 
@@ -88,6 +86,8 @@ bool aeditortab::loadFile(const QString &fileName)
     highlighter = new Highlighter(BoardIndex, editor->document());
     textEdit = qobject_cast<aeditor*>(ui->tabWidget->currentWidget());    
 
+
+
     const bool succeeded = editor->loadFile(fileName);
 
     connect(editor->document(), &QTextDocument::contentsChanged, this, &aeditortab::asterisk);
@@ -106,17 +106,20 @@ bool aeditortab::loadFile(const QString &fileName)
 void aeditortab::asterisk()
 {
     aeditor *editor = activeAEditor();
+    /*
+        if(editor->isFileLoad()){
 
-    if(editor->isFileLoad()){
-        QString nameFile = ui->tabWidget->tabText(ui->tabWidget->currentIndex());        
+        }
+
+    editor->isFileLoad(true);*/
+
+    if(editor->isWindowModified()){
+        QString nameFile = ui->tabWidget->tabText(ui->tabWidget->currentIndex());
         if(nameFile.endsWith("*"))
            ui->tabWidget->setTabText(ui->tabWidget->currentIndex(),nameFile);
         else
-           ui->tabWidget->setTabText(ui->tabWidget->currentIndex(),nameFile.insert(nameFile.size(),"*"));
+            ui->tabWidget->setTabText(ui->tabWidget->currentIndex(),nameFile.insert(nameFile.size(),"*"));
     }
-
-    editor->isFileLoad(true);    
-
 }
 
 aeditor *aeditortab::activeAEditor()
@@ -170,6 +173,7 @@ bool aeditortab::save()
     if(saveFile)
         ui->tabWidget->setTabText(ui->tabWidget->currentIndex(),QFileInfo(editor->currentFile()).fileName());
 
+    editor->setWindowModified(false);
     return saveFile;
 }
 
@@ -204,7 +208,7 @@ void aeditortab::update_editorStatus(bool *editorStatus, int &tabUnsaved)
 
         editorStatus[0]=true;        
 
-        for (int i=0; i<=ui->tabWidget->count();i++){            
+        for (int i=0; i<=ui->tabWidget->count();i++){
             if(ui->tabWidget->tabText(i).contains('*')){
                 editorStatus[1]=true;
                 tabUnsaved=i;

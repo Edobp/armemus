@@ -30,7 +30,10 @@ SOURCES +=\
     project/abuild.cpp \
     project/adirectories.cpp \
     project/asymbols.cpp \
-    editor/textedit.cpp
+    editor/textedit.cpp \
+    project/iopins.cpp \
+    board/apainter.cpp
+
 
 HEADERS  += \
     armemus.h \
@@ -46,7 +49,9 @@ HEADERS  += \
     project/asymbols.h \
     aincludes.h \
     adefinitions.h \
-    editor/textedit.h
+    editor/textedit.h \
+    project/iopins.h \
+    board/apainter.h
 
 FORMS    += \
     armemus.ui \

@@ -28,7 +28,9 @@ public slots:
     void actionCloseProject();
     void actionExit();
     void actionBuildOptions();
-    void actionBuild();    
+    void actionBuild();
+    void actionPlay();
+    void actionStop();
 
 private:
     Ui::armemus *ui;
@@ -39,7 +41,8 @@ private:
     inline void DisableButtons();    
     inline void clearWorkspace();
     inline void setWorkspace();
-    void loadBoards();    
+    void loadBoards();
+    void closeProcess(); //close process channel
 
     // Center area new project
 
@@ -57,24 +60,28 @@ private:
 
     bool existProject;
     bool editorStatus[2];  //indice 0: indica existencia de pestañas; indice 1: indica si hay archivos sin guardar
-    int tabUnsaved;
+    int tabUnsaved;  //se usa para tener conocimiento de pestañas sin guardar
 
     AProjectInfo projectInfo;
     QList<Board> boards;
+    IOpins IOBoard;
 
     QString FileBoard;
 
     //Process
 
     QProcess BuildProcess;
+    QProcess QemuProcess;
+    QProcess GDBprocess;
 
     //Print Process
 
-    void  printBuildProcess();
+    void  printProcess();
 
     //App events
     void update_editorStatus();
     bool confirmSave();
+    int getIndex(const QByteArray &processReader);
     void closeEvent (QCloseEvent *event);
 };
 

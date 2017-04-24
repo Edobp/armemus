@@ -19,7 +19,7 @@ public:
     explicit aproject(QWidget *parent = 0, QList<Board> boards=QList<Board>());
     ~aproject();
 
-    void getInfo(AProjectInfo &info);
+    void getInfo(AProjectInfo &info);    
     void getFilePath(QString &file);
     void clear();
 
@@ -40,10 +40,9 @@ private:
     QString projectPath;
     int boardIndex;
 
-    QString filePath;
-    QString extFile;
+    QString filePath;    
 
-    void copyPath(QString src,  QString dst);
+    void copyProjectFolders(QString src,  QString dst);
     void clearProjectFiles();
 };
 

@@ -24,5 +24,21 @@ typedef struct
     QString image;    
 }Board;
 
+typedef struct
+{
+    int num;
+    double x;
+    double y;
+    QString color;
+}LED;
+
+typedef struct
+{
+    int num;
+    double x;
+    double y;
+    int led;
+}PIN;
+
 
 #endif // ADEFINITIOS_H

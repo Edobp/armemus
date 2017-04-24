@@ -50,7 +50,7 @@ private:
     QFont font;
     QString BoardKey;
     QCompleter *completer;
-    int BoardIndex;    
+    int BoardIndex;
 };
 
 #endif // aeditortab_H

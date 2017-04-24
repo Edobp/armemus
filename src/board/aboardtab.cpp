@@ -10,6 +10,7 @@ aboardtab::aboardtab(QWidget *parent) :
     m_view = new SvgView;
 
     ui->graphicGridLayout->addWidget(m_view);
+
 }
 
 aboardtab::~aboardtab()
@@ -30,5 +31,30 @@ bool aboardtab::loadFile(const QString &fileName)
 
     m_view->scale(widthScale, heightScale);
 
+    Painter=new apainter(m_view->getSvgItem());
+
     return true;
+}
+
+void aboardtab::inputEvent()
+{
+    Painter->inputEvent();
+
+}
+void aboardtab::showInput()
+{
+    Painter->showInput(m_view);
+}
+
+void aboardtab::turnOn()
+{
+    connect(m_view, &SvgView::showInput, this, &aboardtab::showInput);
+    connect(m_view, &SvgView::inputEvent, this, &aboardtab::inputEvent);
+}
+
+void aboardtab::turnOff()
+{
+    Painter->turnOff();
+    disconnect(m_view, &SvgView::showInput, this, &aboardtab::showInput);
+    disconnect(m_view, &SvgView::inputEvent, this, &aboardtab::inputEvent);
 }

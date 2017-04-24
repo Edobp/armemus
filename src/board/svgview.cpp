@@ -41,6 +41,8 @@
 
 #include <QSvgRenderer>
 
+#include <QThread>
+
 #include <QWheelEvent>
 #include <QMouseEvent>
 #include <QGraphicsRectItem>
@@ -62,16 +64,17 @@ SvgView::SvgView(QWidget *parent)
     , m_backgroundItem(nullptr)
     , m_outlineItem(nullptr)
 {
+    setMouseTracking(true);
     setScene(new QGraphicsScene(this));
-    setTransformationAnchor(AnchorUnderMouse);
-    setDragMode(ScrollHandDrag);
+    setTransformationAnchor(AnchorUnderMouse);    
+    //setDragMode(ScrollHandDrag);
     setViewportUpdateMode(FullViewportUpdate);
 
 
     QPixmap tilePixmap(64, 64);
     tilePixmap.fill(Qt::white);
 
-    setBackgroundBrush(tilePixmap);
+    setBackgroundBrush(tilePixmap);     
 }
 
 void SvgView::drawBackground(QPainter *p, const QRectF &)
@@ -114,11 +117,8 @@ bool SvgView::openFile(const QString &fileName)
 
     m_outlineItem = new QGraphicsRectItem(m_svgItem->boundingRect());
 
-
     s->addItem(m_backgroundItem);
-    s->addItem(m_svgItem);
-
-    drawPin();
+    s->addItem(m_svgItem);    
 
     //s->addItem(m_outlineItem);
 
@@ -193,17 +193,25 @@ void SvgView::wheelEvent(QWheelEvent *event)
 
 void SvgView::mousePressEvent(QMouseEvent *event)
 {
-    if( event->buttons() & Qt::LeftButton ){        
+    if( event->buttons() & Qt::LeftButton ){
         m_originX = event->x();
         m_originY = event->y();
     }
+
     event->accept();
+
+    if(receivers(SIGNAL(inputEvent())))
+        emit inputEvent();
 }
 
 
 void SvgView::mouseMoveEvent(QMouseEvent *event)
-{
+{    
+    setCursor(Qt::OpenHandCursor);
+
     if( event->buttons() & Qt::LeftButton ){
+
+        setCursor(Qt::ClosedHandCursor);
 
         QPointF oldp = mapToScene(m_originX, m_originY);
         QPointF newp = mapToScene(event->pos());
@@ -213,10 +221,14 @@ void SvgView::mouseMoveEvent(QMouseEvent *event)
 
         m_originX = event->x();
         m_originY = event->y();
-        event->accept();
 
+        event->accept();
     }
+
     event->ignore();
+
+    if(receivers(SIGNAL(showInput())))
+        emit showInput();
 }
 
 
@@ -227,18 +239,7 @@ QSvgRenderer *SvgView::renderer() const
     return nullptr;
 }
 
-void SvgView::drawPin()
+QGraphicsSvgItem *SvgView::getSvgItem()
 {
-    double x, y, w, h;
-
-    x=142.1;
-    y=15.28;
-
-    w=7;  //Ancho
-    h=7;  //Alto
-
-    QGraphicsRectItem *ptr_pin=new QGraphicsRectItem(x, y, w, h, m_svgItem);
-
-    ptr_pin->setPen(Qt::NoPen);
-    ptr_pin->setBrush(Qt::green);
+    return m_svgItem;
 }

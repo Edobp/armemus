@@ -1,4 +1,4 @@
-#include "aproject.h"
+﻿#include "aproject.h"
 #include "ui_aproject.h"
 
 #include <QFileDialog>
@@ -27,7 +27,7 @@ aproject::aproject(QWidget *parent, QList<Board> boards) :
     connect(ui->browseButton, &QPushButton::clicked, this, &aproject::pathSearch);
     connect(ui->cancelButton1, &QPushButton::clicked, this, &aproject::actionCancel);
     connect(ui->cancelButton2, &QPushButton::clicked, this, &aproject::actionCancel);
-    connect(ui->nextButton, &QPushButton::pressed, this, &aproject::nextTab);
+    connect(ui->nextButton, &QPushButton::clicked, this, &aproject::nextTab);
     connect(ui->backButton, &QPushButton::clicked, this, &aproject::backTab);
     connect(ui->boardComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &aproject::selectBoard);
     connect(ui->finishButton, &QPushButton::clicked, this, &aproject::actionFinish);
@@ -60,8 +60,7 @@ void aproject::clear()
     projectPath.clear();    
     boardIndex=0;
 
-    filePath.clear();
-    extFile.clear();
+    filePath.clear();    
 
     ui->nameLineEdit->clear();
     ui->boardComboBox->setCurrentIndex(0);
@@ -138,13 +137,16 @@ void aproject::actionFinish()
         const QMessageBox::StandardButton sel =
                 QMessageBox::question(this,
                                       tr(APROJECT_NAME),
-                                      tr("Project \"")+projectName+".apf"+tr("\" already exists\nDo you want to overwrite it?"));
+                                      tr("Project \"%1.apf\" already exists\nDo you want to overwrite it?\n(Note: All previous project folders created will be removed)").arg(projectName));
         switch (sel) {
         case QMessageBox::Yes:
             clearProjectFiles();
             break;
         case QMessageBox::No:
             ui->tabWidget->setCurrentIndex(0);
+            projectName.clear();
+            projectPath.clear();
+            boardIndex=0;
             return;
         default:
             break;
@@ -198,42 +200,28 @@ void aproject::actionFinish()
 
     dir.mkpath("Build");
 
-    QString Fuente;
-    QString Destino;
+    QString Source;
+    QString Destination(projectPath+"/"+projectName);
 
     switch (boardIndex-1) {
     case ArduinoDue:
     case ArduinoZero:
     case Feather:        
-        Fuente=":/files/Arduino/Arduino";
-        Destino=projectPath+"/"+projectName;
-        extFile=".ino";
+        Source=":/files/Arduino/Arduino";
         break;
     case Tiva:        
-        Fuente=":/files/Tiva/Tiva";
-        Destino=projectPath+"/"+projectName;
-        extFile=".c";
+        Source=":/files/Tiva/Tiva";
         break;
     default:
         break;
     }
 
-    copyPath(Fuente, Destino);
+    copyProjectFolders(Source, Destination);
     this->close();
 }
 
-/* ******************************************************************************************
- * ******************************************************************************************/
 
-void aproject::getInfo(AProjectInfo &info)
-{
-    info.name = projectName;
-    info.path = projectPath;    
-    info.boardIndex = boardIndex-1;
-}
-
-
-void aproject::copyPath(QString src,  QString dst)
+void aproject::copyProjectFolders(QString src,  QString dst)
 {
 
     QDirIterator Folders(src,QDir::Dirs | QDir::NoDotAndDotDot);
@@ -246,11 +234,12 @@ void aproject::copyPath(QString src,  QString dst)
     while(Folders.hasNext())
     {
         Folders.next();
+
         if(Folders.fileName()=="template")
-            copyPath(src+QDir::separator()+Folders.fileName(),dst+QDir::separator()+projectName);
+            copyProjectFolders(Folders.filePath(),dst+QDir::separator()+projectName);
         else
-            copyPath(src+QDir::separator()+Folders.fileName(),dst+QDir::separator()+Folders.fileName());
-    }    
+            copyProjectFolders(Folders.filePath(),dst+QDir::separator()+Folders.fileName());
+    }
 
     QDirIterator Files(src,QDir::Files);
 
@@ -258,48 +247,57 @@ void aproject::copyPath(QString src,  QString dst)
     {
         Files.next();
 
-        if(Files.fileName()=="template" || Files.fileName()=="main"){
-            if(extFile==".c")
-                filePath=dst+QDir::separator()+"main"+extFile;
-            else
-                filePath=dst+QDir::separator()+projectName+extFile;
+        if(Files.fileName().contains("template")){
 
-            QFile::copy(Files.filePath(),filePath);
-            QFile::setPermissions(filePath, QFile::WriteOwner | QFile::ReadOwner);
-
+            if(Files.fileName()=="template.ino"){
+                filePath=dst+QDir::separator()+projectName+".ino";
+                QFile::copy(Files.filePath(),filePath);
+                QFile::setPermissions(filePath, QFile::WriteOwner | QFile::ReadOwner);
+            }
         }
-        else{
+
+        else {
             QFile::copy(Files.filePath(),dst+QDir::separator()+Files.fileName());
             QFile::setPermissions(dst+QDir::separator()+Files.fileName(), QFile::WriteOwner | QFile::ReadOwner);
+            if(Files.fileName()=="main.c")
+                filePath=dst+QDir::separator()+Files.fileName();
         }
     }
 }
 
-void aproject::getFilePath(QString &file)
-{
-    file=filePath;
-}
-
 void aproject::clearProjectFiles()
 {
-    QDir dir;
-
     //remove apf
 
     QFile::remove(projectPath+"/"+projectName+"/"+projectName+".apf");
 
     //remove all folders of previous project with their contents
 
+    QDir dir;
+
     QDirIterator Folders(projectPath+"/"+projectName,QDir::Dirs | QDir::NoDotAndDotDot);
 
     while (Folders.hasNext())
     {
-        Folders.next();        
+        Folders.next();
         if((Folders.fileName()=="Build")||(Folders.fileName()==projectName)){
-            dir.setPath(Folders.filePath());            
+            dir.setPath(Folders.filePath());
             dir.removeRecursively();
         }
     }
 }
 
+/* ******************************************************************************************
+ * ******************************************************************************************/
 
+void aproject::getInfo(AProjectInfo &info)
+{
+    info.name = projectName;
+    info.path = projectPath;    
+    info.boardIndex = boardIndex-1;
+}
+
+void aproject::getFilePath(QString &file)
+{
+    file=filePath;
+}

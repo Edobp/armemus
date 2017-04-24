@@ -7,12 +7,14 @@
         <file>files/Tiva/autoComplete.txt</file>
         <file>files/Tiva/keyWords.txt</file>
         <file>files/Tiva/keyWords2.txt</file>
-        <file>files/Arduino/Arduino/template/template</file>
+        <file>files/Arduino/Arduino/template/template.ino</file>
         <file>files/Tiva/Tiva/template/Makefile</file>
         <file>files/Tiva/Tiva/template/README.md</file>
         <file>files/Tiva/Tiva/template/TM4C123GH6PM.ld</file>
         <file>files/Tiva/Tiva/template/src/startup_gcc.c</file>
         <file>files/Tiva/Tiva/template/src/tm4c123gh6pm.h</file>
-        <file>files/Tiva/Tiva/template/src/main</file>
+        <file>files/Tiva/Tiva/template/src/main.c</file>
+        <file>files/Arduino/I-O/Arduino Zero.txt</file>
+        <file>files/Arduino/I-O/Arduino Due.txt</file>
     </qresource>
 </RCC>
