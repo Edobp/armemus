@@ -9,10 +9,13 @@ apainter::apainter(QGraphicsSvgItem *parent) : m_svgItem(parent)
 
 }
 
-void apainter::drawPin(const PIN *pin,const double *whpin, int isRect)
+void apainter::drawPin(const PIN *pin, const double *whpin, int isRect)
 {
+    if(pin==nullptr)
+        qDebug()<<"error!";
+
     outputStr.append("Pin"+QString::number(pin->num));
-    QAbstractGraphicsShapeItem *ptr_pin;
+    QAbstractGraphicsShapeItem *ptr_pin;    
 
     if(isRect)
         ptr_pin=new QGraphicsRectItem(pin->x, pin->y, whpin[0], whpin[1], m_svgItem);

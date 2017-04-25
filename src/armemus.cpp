@@ -11,13 +11,23 @@ armemus::armemus(QWidget *parent) :
 
     /****************************************
      *  Connects signals - slots ARMEmuS App
-     ****************************************/    
+     ****************************************/
+
+    //Cierra conexión generada por el error
+
+    QProcess closeConnection;
+
+    closeConnection.start("bash",QStringList()<<"-c"<<"fuser -k 1234/tcp");
+    closeConnection.waitForFinished(-1);
+    closeConnection.close();
+
+    //--------------------------------------------------
 
     connect(ui->actionNew, &QAction::triggered, this, &armemus::actionNew);
     connect(ui->actionOpen, &QAction::triggered, this, &armemus::actionOpen);
     connect(ui->actionSave, &QAction::triggered, this, &armemus::actionSave);
     connect(ui->actionCloseProject, &QAction::triggered, this, &armemus::actionCloseProject);
-    
+
     connect(ui->actionHelp, &QAction::triggered, this, &armemus::actionHelp);
     connect(ui->actionAbout, &QAction::triggered, this, &armemus::actionAbout);
     connect(ui->actionExit, &QAction::triggered, this, &armemus::actionExit);
@@ -25,18 +35,19 @@ armemus::armemus(QWidget *parent) :
 
     connect(ui->actionNewFile, &QAction::triggered, this, &armemus::actionNewFile);
     connect(ui->actionOpenFile, &QAction::triggered, this, &armemus::actionOpenFile);
-    connect(ui->actionCloseFile, &QAction::triggered, this, &armemus::actionCloseFile);    
+    connect(ui->actionCloseFile, &QAction::triggered, this, &armemus::actionCloseFile);
 
     connect(ui->actionBuild, &QAction::triggered, this, &armemus::actionBuild);
     connect(ui->actionPlay, &QAction::triggered, this, &armemus::actionPlay);
     connect(ui->actionStop, &QAction::triggered, this, &armemus::actionStop);
 
-    existProject = false;    
+    existProject = false;
 
     DisableButtons();
     loadBoards();
     project = new aproject(this, boards);
 
+    BuildProcess.setProcessChannelMode(QProcess::MergedChannels);
     QemuProcess.setProcessChannelMode(QProcess::MergedChannels);
 }
 
@@ -53,7 +64,7 @@ void armemus::actionNew()
     if (!existProject)
         setWorkspace();
 
-    else{         
+    else{
         if(QemuProcess.isOpen())
             emit actionStop();
         const QMessageBox::StandardButton sel =
@@ -62,7 +73,7 @@ void armemus::actionNew()
                                       tr("Do you want to close this project and to create a new project?"));
 
         switch (sel) {
-        case QMessageBox::Yes:                        
+        case QMessageBox::Yes:
             if(confirmSave())
                 break;
             else
@@ -100,10 +111,10 @@ void armemus::actionOpenFile()
 
 bool armemus::actionSave()
 {
-    update_editorStatus();    
+    update_editorStatus();
 
     if(editorStatus[1]){
-        editor->findtabUnsaved(tabUnsaved);        
+        editor->findtabUnsaved(tabUnsaved);
         if(editor->save())
             return this->actionSave();
         else
@@ -131,7 +142,7 @@ void armemus::actionAbout()
     link.setText(APROJECT_NAME"<br>Icons:<a href=\"https://snwh.org/paper/\">Paper Icons</a></br> by Sam Hewitt");
     link.setOpenExternalLinks(true);
 
-    About.about(this,tr("About " APROJECT_NAME), link.text());    
+    About.about(this,tr("About " APROJECT_NAME), link.text());
 }
 
 void armemus::actionExit()
@@ -148,7 +159,7 @@ void armemus::actionBuildOptions()
 }
 
 void armemus::actionBuild()
-{    
+{
     BuildProcess.setProcessChannelMode(QProcess::MergedChannels);
     connect(&BuildProcess, &QProcess::readyRead, this, &armemus::printProcess);
     connect(&BuildProcess, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished), this, &armemus::closeProcess);
@@ -165,51 +176,48 @@ void armemus::actionBuild()
     case ArduinoDue:
         BuildProcess.start(root+ABuilder+"arduino-builder", QStringList()<<"-compile"<<"-logger"<<"machine"<<"-hardware"<<root+ABuilder+"hardware"<<"-hardware"<<root+ABuilder+"arduino-packages/packages"<<"-tools"<<root+ABuilder+"tools-builder"<<"-tools"<<root+ABuilder+"hardware/tools/avr"<<"-tools"<<root+ABuilder+"arduino-packages/packages"<<"-built-in-libraries"<<root+ABuilder+"libraries"<<"-libraries"<<root+ABuilder+"Arduino/libraries"<<"-fqbn"<<"arduino:sam:arduino_due_x"<<"-build-path"<<path_Build<<"-warnings"<<"none"<<"-prefs"<<"build.warn_data_percentage=75"<<"-prefs"<<"-runtime.tools.bossac.path="+root+ABuilder+"arduino-packages/packages/arduino/tools/bossac/1.6.1-arduino"<<"-prefs"<<"runtime.tools.arm-none-eabi-gcc.path="+root+ABuilder+"arduino-packages/packages/arduino/tools/arm-none-eabi-gcc/4.8.3-2014q1"<<"-verbose"<<path_File);
         break;
-    case ArduinoZero:        
+    case ArduinoZero:
         BuildProcess.start(root+ABuilder+"arduino-builder", QStringList()<<"-compile"<<"-logger"<<"machine"<<"-hardware"<<root+ABuilder+"hardware"<<"-hardware"<<root+ABuilder+"arduino-packages/packages"<<"-tools"<<root+ABuilder+"tools-builder"<<"-tools"<<root+ABuilder+"hardware/tools/avr"<<"-tools"<<root+ABuilder+"arduino-packages/packages"<<"-built-in-libraries"<<root+ABuilder+"libraries"<<"-libraries"<<root+ABuilder+"Arduino/libraries"<<"-fqbn"<<"arduino:samd:arduino_zero_native"<<"-build-path"<<path_Build<<"-warnings"<<"none"<<"-prefs"<<"build.warn_data_percentage=75"<<"-prefs"<<"-runtime.tools.bossac.path="+root+ABuilder+"arduino-packages/packages/arduino/tools/bossac/1.7.0"<<"-prefs"<<"runtime.tools.arm-none-eabi-gcc.path="+root+ABuilder+"arduino-packages/packages/arduino/tools/arm-none-eabi-gcc/4.8.3-2014q1"<<"-prefs"<<"runtime.tools.openocd.path="+root+ABuilder+"arduino-packages/packages/arduino/tools/openocd/0.9.0-arduino"<<"-prefs"<<"runtime.tools.CMSIS.path="+root+ABuilder+"arduino-packages/packages/arduino/tools/CMSIS/4.0.0-atmel"<<"-verbose"<<path_File);
         break;
     case Tiva:
         //se debe cambiar en el archivo Makefile del resource la linea
         //TIVAWARE_PATH = /home/malo/Escritorio/Builders/SW-EK-TM4C123GXL
         BuildProcess.start("make", QStringList()<<"-C"<<projectInfo.path+"/"+projectInfo.name+"/"+projectInfo.name);
-        break;        
+        break;
     default:
         break;
-    }
+    }    
 }
 
 void armemus::actionPlay()
 {
     ui->actionStop->setEnabled(true);
-    ui->actionPlay->setEnabled(false);
-
-    connect(&QemuProcess, &QProcess::readyRead, this, &armemus::printProcess);
-    connect(&QemuProcess, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished), this, &armemus::closeProcess);    
+    ui->actionPlay->setEnabled(false);    
 
     tabs->setCurrentIndex(1);
-    outputBrowser->clear();    
+    outputBrowser->clear();
 
-    QString File="/home/malo/Escritorio/BlinkArmemus_Due.ino.elf";
+    QString File=projectInfo.path+"/"+projectInfo.name+"/Build/"+projectInfo.name+".ino.elf";
     QString command="--eval-command";
 
-
-    board->turnOn();    
+    board->turnOn();
 
     board->Painter->drawInputs(IOBoard.pinsboard, IOBoard.whpin, IOBoard.pinRect);
 
     board->Painter->drawLed(&IOBoard.ledsboard[0], IOBoard.whled, IOBoard.ledRect);
 
-    QemuProcess.start("/home/malo/Documentos/qemu-gnuarmeclipse-armemus/gnuarmeclipse-softmmu/qemu-system-gnuarmeclipse", QStringList()<<"--mcu"<<"SAM3X8E"<<"--gdb"<<"tcp::1234"<<"-L"<<"/home/malo/Documentos/qemu-gnuarmeclipse-armemus/gnuarmeclipse"<<"--verbose"<<"--verbose");
+    QemuProcess.start("/home/malo/qemu-armemus/qemu-system-gnuarmeclipse", QStringList()<<"--mcu"<<"SAM3X8E"<<"--gdb"<<"tcp::1234"<<"-L"<<"/home/malo/qemu-armemus"<<"--verbose"<<"--verbose");
 
-    QemuProcess.waitForStarted(-1);
+    QemuProcess.waitForStarted(-1);    
 
-    GDBprocess.start("arm-none-eabi-gdb",QStringList()<<File<<command<<"target remote :1234"<<command<<"load"<<command<<"c");
+    GDBprocess.start("arm-none-eabi-gdb",QStringList()<<command<<"target remote :1234"<<command<<"load"<<File<<command<<"c");
 
     GDBprocess.waitForStarted(-1);
 
     QemuProcess.waitForBytesWritten(-1);
 
-
+    connect(&QemuProcess, &QProcess::readyRead, this, &armemus::printProcess);
+    connect(&QemuProcess, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished), this, &armemus::closeProcess);
 }
 
 void armemus::actionStop()
@@ -251,7 +259,7 @@ void armemus::loadBoards()
     QTextStream in(&fileBoards);
     Board board;
 
-    while (!in.atEnd()) {        
+    while (!in.atEnd()) {
         in >> board.name >> board.image;
         if( !board.name.isEmpty() )
             boards.append(board);
@@ -262,7 +270,7 @@ void armemus::loadBoards()
 
 inline void armemus::clearWorkspace(){
 
-    existProject=false;    
+    existProject=false;
     DisableButtons();
     delete outputBrowser;
     //delete editor;
@@ -285,7 +293,7 @@ inline void armemus::DisableButtons()
     //toolbar
     ui->actionSave->setEnabled(false);
     ui->actionBuild->setEnabled(false);
-    //ui->actionPlay->setEnabled(false);
+    ui->actionPlay->setEnabled(false);
     ui->actionStop->setEnabled(false);
     ui->actionStep->setEnabled(false);
 }
@@ -296,13 +304,13 @@ inline void armemus::setWorkspace()
     project->exec();
     project->getInfo(projectInfo);
 
-    if ( !projectInfo.name.isEmpty() && !projectInfo.path.isEmpty() ){        
+    if ( !projectInfo.name.isEmpty() && !projectInfo.path.isEmpty() ){
 
         outputBrowser = new QTextBrowser;
 
         tabs = new QTabWidget;
 
-        editor = new aeditortab(projectInfo.boardIndex);        
+        editor = new aeditortab(projectInfo.boardIndex);
         board = new aboardtab;
         IOBoard.setBoard(projectInfo.boardIndex);
 
@@ -312,13 +320,13 @@ inline void armemus::setWorkspace()
         ui->mainLayout->addWidget(tabs);
         ui->outputLayout->addWidget(outputBrowser);
 
-        tabs->setCurrentIndex(0);                
+        tabs->setCurrentIndex(0);
 
         project->getFilePath(FileBoard);
         editor->openFile(FileBoard);
         board->loadFile(":/boards/"+boards[projectInfo.boardIndex].image);
 
-        existProject = true;        
+        existProject = true;
 
         ui->actionNewFile->setEnabled(true);
         ui->actionOpenFile->setEnabled(true);
@@ -333,7 +341,7 @@ inline void armemus::setWorkspace()
 void  armemus::printProcess()
 
 {
-    QByteArray processReader;    
+    QByteArray processReader;
 
     if(BuildProcess.isReadable()){
         processReader=BuildProcess.readAll();
@@ -341,12 +349,12 @@ void  armemus::printProcess()
         outputBrowser->verticalScrollBar()->setValue(outputBrowser->verticalScrollBar()->maximum());
     }
 
-    else{           //if(QemuProcess.isReadable()){        
+    else{           //if(QemuProcess.isReadable()){
         processReader=QemuProcess.readAll();
         outputBrowser->insertPlainText(processReader);
         outputBrowser->verticalScrollBar()->setValue(outputBrowser->verticalScrollBar()->maximum());
 
-        if(processReader.contains("HIGH") || processReader.contains("LOW")){            
+        if(processReader.contains("HIGH") || processReader.contains("LOW")){
             int index=getIndex(processReader);
 
             if(!board->Painter->outputStr.contains("Pin"+QString::number(index)))
@@ -360,7 +368,7 @@ void  armemus::printProcess()
                 copyOut=copyOut.mid(copyOut.indexOf(":"));
                 copyOut.insert(0,"led");
                 board->Painter->drawStatus(copyOut, IOBoard.pinsboard[index].led);
-            }            
+            }
             board->Painter->drawStatus(processReader, index);
         }
     }
@@ -370,7 +378,7 @@ void  armemus::printProcess()
 
 bool armemus::confirmSave()
 
-{    
+{
     if(editorStatus[1]){
         const QMessageBox::StandardButton sel =
                 QMessageBox::question(this,
@@ -379,8 +387,8 @@ bool armemus::confirmSave()
         switch (sel) {
         case QMessageBox::Yes:
             if(!this->actionSave())
-                return false;            
-        case QMessageBox::No:                        
+                return false;
+        case QMessageBox::No:
             break;
         default:
             break;
@@ -392,8 +400,12 @@ bool armemus::confirmSave()
 
 void armemus::closeProcess()
 {
-    if(BuildProcess.isOpen())
+    if(BuildProcess.isOpen()){
         BuildProcess.close();
+        disconnect(&BuildProcess, &QProcess::readyRead, this, &armemus::printProcess);
+        disconnect(&BuildProcess, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished), this, &armemus::closeProcess);
+        ui->actionPlay->setEnabled(true);
+    }
 
     if(QemuProcess.isOpen())
         emit actionStop();

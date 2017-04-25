@@ -1,8 +1,0 @@
-//Poner aquí plantilla para la Tiva
-
-#include <iostream>
-
-int main()
-{
-  std::cout << "Hello World!";
-}

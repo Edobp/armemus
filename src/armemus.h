@@ -16,7 +16,7 @@ public:
     explicit armemus(QWidget *parent = 0);
     ~armemus();    
 
-public slots:
+private slots:
     void actionNew();
     void actionNewFile();
     void actionOpen();
@@ -31,6 +31,8 @@ public slots:
     void actionBuild();
     void actionPlay();
     void actionStop();
+
+    void  printProcess();
 
 private:
     Ui::armemus *ui;
@@ -73,10 +75,6 @@ private:
     QProcess BuildProcess;
     QProcess QemuProcess;
     QProcess GDBprocess;
-
-    //Print Process
-
-    void  printProcess();
 
     //App events
     void update_editorStatus();

@@ -64,6 +64,6 @@ FORMS    += \
 
 RESOURCES += \
     resources/icons.qrc \
-    resources/text.qrc \
     resources/boards.qrc \
-    resources/armemus.qrc
+    resources/armemus.qrc \
+    resources/text.qrc
