@@ -14,7 +14,7 @@
         <file>files/Tiva/Tiva/template/src/startup_gcc.c</file>
         <file>files/Tiva/Tiva/template/src/tm4c123gh6pm.h</file>
         <file>files/Tiva/Tiva/template/src/main.c</file>
-        <file>files/Arduino/I-O/Arduino Zero.txt</file>
         <file>files/Arduino/I-O/Arduino Due.txt</file>
+        <file>files/Arduino/I-O/Arduino Zero.txt</file>
     </qresource>
 </RCC>

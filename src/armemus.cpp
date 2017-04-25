@@ -206,7 +206,10 @@ void armemus::actionPlay()
 
     board->Painter->drawLed(&IOBoard.ledsboard[0], IOBoard.whled, IOBoard.ledRect);
 
-    QemuProcess.start("/home/malo/qemu-armemus/qemu-system-gnuarmeclipse", QStringList()<<"--mcu"<<"SAM3X8E"<<"--gdb"<<"tcp::1234"<<"-L"<<"/home/malo/qemu-armemus"<<"--verbose"<<"--verbose");
+    QemuProcess.setWorkingDirectory("/home/malo/");
+
+    //QemuProcess.start("qemu-armemus/qemu-system-gnuarmeclipse", QStringList()<<"--mcu"<<"SAM3X8E"<<"--gdb"<<"tcp::1234"<<"-L"<<"qemu-armemus/"<<"--verbose"<<"--verbose");
+    QemuProcess.start("qemu-armemus/qemu-system-gnuarmeclipse", QStringList()<<"--mcu"<<"SAMD21G18"<<"--gdb"<<"tcp::1234"<<"-L"<<"qemu-armemus/"<<"--verbose"<<"--verbose");
 
     QemuProcess.waitForStarted(-1);    
 
@@ -215,6 +218,7 @@ void armemus::actionPlay()
     GDBprocess.waitForStarted(-1);
 
     QemuProcess.waitForBytesWritten(-1);
+    QemuProcess.waitForReadyRead(-1);
 
     connect(&QemuProcess, &QProcess::readyRead, this, &armemus::printProcess);
     connect(&QemuProcess, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished), this, &armemus::closeProcess);
@@ -355,21 +359,30 @@ void  armemus::printProcess()
         outputBrowser->verticalScrollBar()->setValue(outputBrowser->verticalScrollBar()->maximum());
 
         if(processReader.contains("HIGH") || processReader.contains("LOW")){
-            int index=getIndex(processReader);
+            int j=processReader.count('\n');
 
-            if(!board->Painter->outputStr.contains("Pin"+QString::number(index)))
-                board->Painter->drawPin(&IOBoard.pinsboard[index], IOBoard.whpin, IOBoard.pinRect);
+            for(int i=0;i<j;i++){
 
-            if(IOBoard.pinsboard[index].led!=-1){
-                if(!board->Painter->outputStr.contains("Led"+QString::number(IOBoard.pinsboard[index].led)))
-                    board->Painter->drawLed(&IOBoard.ledsboard[IOBoard.pinsboard[index].led], IOBoard.whled, IOBoard.ledRect);
+                QByteArray singleLine(processReader.left(processReader.indexOf('\n')));
 
-                QByteArray copyOut(processReader);
-                copyOut=copyOut.mid(copyOut.indexOf(":"));
-                copyOut.insert(0,"led");
-                board->Painter->drawStatus(copyOut, IOBoard.pinsboard[index].led);
+                int index=getIndex(singleLine);
+
+                if(!board->Painter->outputStr.contains("Pin"+QString::number(index)))
+                    board->Painter->drawPin(&IOBoard.pinsboard[index], IOBoard.whpin, IOBoard.pinRect);
+
+                if(IOBoard.pinsboard[index].led!=-1){
+                    if(!board->Painter->outputStr.contains("Led"+QString::number(IOBoard.pinsboard[index].led)))
+                        board->Painter->drawLed(&IOBoard.ledsboard[IOBoard.pinsboard[index].led], IOBoard.whled, IOBoard.ledRect);
+
+                    QByteArray copyOut(singleLine);
+                    copyOut=copyOut.mid(copyOut.indexOf(":"));
+                    copyOut.insert(0,"led");
+                    board->Painter->drawStatus(copyOut, IOBoard.pinsboard[index].led);
+                }
+                board->Painter->drawStatus(singleLine, index);
+                processReader=processReader.mid(processReader.indexOf("\n")+1);
+
             }
-            board->Painter->drawStatus(processReader, index);
         }
     }
 }

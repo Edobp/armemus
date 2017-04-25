@@ -43,7 +43,7 @@ void IOpins::setBoard(int index)
 
     while (!textStream.atEnd()){
 
-        Reader = textStream.readLine();        
+        Reader = textStream.readLine();
 
         if(Reader.contains("\t"))
             Reader.replace("\t"," ");
