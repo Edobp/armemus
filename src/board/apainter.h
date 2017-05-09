@@ -8,26 +8,38 @@
 #include <QGraphicsSvgItem>
 #include <QAbstractGraphicsShapeItem>
 
-class apainter
+class IOpins;
+
+class apainter : public QObject
 {
+    Q_OBJECT
+
+    QGraphicsView *m_view;
     QGraphicsSvgItem *m_svgItem;
-    QList<QAbstractGraphicsShapeItem*> outputList;
-    QList<QAbstractGraphicsShapeItem*> inputList;
-    void removeInputPin(int index);    
+    QList<QAbstractGraphicsShapeItem*> outputPins;
+    QList<QAbstractGraphicsShapeItem*> Leds;
+    QList<QAbstractGraphicsShapeItem*> inputPins;    
+    QList<int> disableInputs;
+
 public:
-    apainter(QGraphicsSvgItem *parent);
+    apainter(QGraphicsView * ptr_view, QGraphicsSvgItem *ptr_svgItem);
+    virtual ~apainter();
 
-    QList<QString> outputStr;
+    void setBoard(const IOpins *IOBoard);
 
-    void drawPin(const PIN *pin, const double *whpin, int isRect);
-    void drawLed(const LED *led, const double *whled, int isRect);
-    void drawStatus(const QByteArray &Reader, int i);
-    void drawInputs(const QList<PIN> &pins, const double *whpin, int isRect);
-    void turnOff();
+    void drawPin(const QByteArray &Reader, int index);
+    void drawLed(const QByteArray &Reader, int index);
 
-    void inputEvent();
-    void showInput(QGraphicsView *ptr);
+    void turnOn();
+    void turnOff();    
+    void clear();
 
+public slots:
+    void inputEvent(bool state);
+    void showInput();
+
+signals:
+    void printInputpin(int index, bool state);
 };
 
 #endif // APAINTER_H

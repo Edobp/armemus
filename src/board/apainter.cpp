@@ -1,138 +1,150 @@
 #include "apainter.h"
 
-
-
-
-
-apainter::apainter(QGraphicsSvgItem *parent) : m_svgItem(parent)
+apainter::apainter(QGraphicsView *ptr_view, QGraphicsSvgItem *ptr_svgItem) : m_view(ptr_view) , m_svgItem(ptr_svgItem)
 {
-
+    clear();
 }
 
-void apainter::drawPin(const PIN *pin, const double *whpin, int isRect)
+apainter::~apainter()
 {
-    if(pin==nullptr)
-        qDebug()<<"error!";
-
-    outputStr.append("Pin"+QString::number(pin->num));
-    QAbstractGraphicsShapeItem *ptr_pin;    
-
-    if(isRect)
-        ptr_pin=new QGraphicsRectItem(pin->x, pin->y, whpin[0], whpin[1], m_svgItem);
-
-    else
-        ptr_pin=new QGraphicsEllipseItem(pin->x, pin->y, whpin[0], whpin[1], m_svgItem);
-
-    ptr_pin->setPen(Qt::NoPen);
-
-    outputList.append(ptr_pin);
-    removeInputPin(pin->num);
+    clear();
 }
 
-void apainter::drawLed(const LED *led, const double *whled, int isRect)
+void apainter::clear()
 {
+    if(!outputPins.isEmpty()){
+        for(int i=0; i<outputPins.count();i++)
+            delete outputPins[i];
+    }
 
-    outputStr.append("Led"+QString::number(led->num));
+    if(!Leds.isEmpty()){
+        for(int i=0; i<Leds.count();i++)
+            delete Leds[i];
+    }
 
-    QAbstractGraphicsShapeItem *ptr_led;
+    if(!inputPins.isEmpty()){
+        for(int i=0; i<inputPins.count();i++)
+            delete inputPins[i];
+    }
 
-    if(isRect)
-        ptr_led=new QGraphicsRectItem(led->x, led->y, whled[0], whled[1], m_svgItem);
-
-    else
-        ptr_led=new QGraphicsEllipseItem(led->x, led->y, whled[0], whled[1], m_svgItem);
-
-
-    ptr_led->setBrush(QColor(led->color));
-    ptr_led->setPen(Qt::NoPen);
-
-    if(led->num!=0)
-        ptr_led->hide();
-
-    outputList.append(ptr_led);
-
-
+    outputPins.clear();
+    Leds.clear();
+    inputPins.clear();
+    disableInputs.clear();
 }
 
-void apainter::drawInputs(const QList<PIN> &pins, const double *whpin, int isRect)
+
+void apainter::setBoard(const IOpins *ptr_IOpins)
 {
+    for(int i=0; i<ptr_IOpins->pinsboard.count(); i++){
+         QAbstractGraphicsShapeItem *ptr_pin;
+
+         if(ptr_IOpins->pinRect)
+             ptr_pin=new QGraphicsRectItem(ptr_IOpins->pinsboard.at(i).x, ptr_IOpins->pinsboard.at(i).y, ptr_IOpins->whpin[0], ptr_IOpins->whpin[1], m_svgItem);
+         else
+             ptr_pin=new QGraphicsEllipseItem(ptr_IOpins->pinsboard.at(i).x, ptr_IOpins->pinsboard.at(i).y, ptr_IOpins->whpin[0], ptr_IOpins->whpin[1], m_svgItem);
+
+         ptr_pin->setPen(Qt::NoPen);
+         ptr_pin->hide();
+
+         outputPins.append(ptr_pin);
+    }
+
+    for(int i=0; i<ptr_IOpins->ledsboard.count(); i++){
+         QAbstractGraphicsShapeItem *ptr_led;
+
+         if(ptr_IOpins->ledRect)
+             ptr_led=new QGraphicsRectItem(ptr_IOpins->ledsboard.at(i).x, ptr_IOpins->ledsboard.at(i).y, ptr_IOpins->whled[0], ptr_IOpins->whled[1], m_svgItem);
+         else
+             ptr_led=new QGraphicsEllipseItem(ptr_IOpins->ledsboard.at(i).x, ptr_IOpins->ledsboard.at(i).y, ptr_IOpins->whled[0], ptr_IOpins->whled[1], m_svgItem);
+
+         ptr_led->setBrush(QColor(ptr_IOpins->ledsboard.at(i).color));
+         ptr_led->setPen(Qt::NoPen);
+         ptr_led->hide();
+         Leds.append(ptr_led);
+    }
+
+//-------------------------------------------------------//-------------------------------------------------------//
+
     QPen lines(Qt::white);
 
-    for(int i=0; i<pins.count();i++){
-        QAbstractGraphicsShapeItem *ptr_input;
-        if(isRect)
-            ptr_input=new QGraphicsRectItem(pins.at(i).x-2, pins.at(i).y-2, whpin[0]+4, whpin[1]+4, m_svgItem);
-        else
-            ptr_input=new QGraphicsEllipseItem(pins.at(i).x, pins.at(i).y, whpin[0], whpin[1], m_svgItem);
+    for(int i=0; i<ptr_IOpins->pinsboard.count(); i++){
+         QAbstractGraphicsShapeItem *ptr_input;
 
+         if(ptr_IOpins->pinRect)
+             ptr_input=new QGraphicsRectItem(ptr_IOpins->pinsboard.at(i).x-2, ptr_IOpins->pinsboard.at(i).y-2, ptr_IOpins->whpin[0]+4, ptr_IOpins->whpin[1]+4, m_svgItem);
+         else
+             ptr_input=new QGraphicsEllipseItem(ptr_IOpins->pinsboard.at(i).x-2, ptr_IOpins->pinsboard.at(i).y-2, ptr_IOpins->whpin[0]+4, ptr_IOpins->whpin[1]+4, m_svgItem);
 
-        ptr_input->setPen(lines);
-        ptr_input->hide();
+         ptr_input->setPen(lines);
+         ptr_input->hide();
 
-        inputList.append(ptr_input);
-    }
-}
-
-void apainter::removeInputPin(int index)
-{
-    delete inputList[index];
-    inputList[index]=new QGraphicsRectItem();    
-}
-
-void apainter::drawStatus(const QByteArray &Reader, int i)
-{
-    QString copyReader(Reader);
-    int indexList;
-    if(copyReader.contains("led")){
-        indexList=outputStr.indexOf("Led"+QString::number(i));
-        if(copyReader.contains("HIGH"))
-            outputList.at(indexList)->show();
-        else
-            outputList.at(indexList)->hide();
+         inputPins.append(ptr_input);
     }
 
-    else{
-        indexList=outputStr.indexOf("Pin"+QString::number(i));
-        if(copyReader.contains("HIGH"))
-            outputList.at(indexList)->setBrush(Qt::red);
-        else
-            outputList.at(indexList)->setBrush(Qt::blue);
-    }
+//-------------------------------------------------------//-------------------------------------------------------//
+
 }
 
-void apainter::inputEvent()
-{
-    for(int i=0;i<inputList.count();i++){
-        if(inputList.at(i)->isUnderMouse())
-            qDebug()<<i;
 
+void apainter::drawPin(const QByteArray &Reader,int index)
+{
+
+
+    if(!outputPins.at(index)->isVisible()){
+        outputPins.at(index)->show();
+        disableInputs.append(index);
     }
+
+    if(Reader.contains("HIGH"))
+        outputPins.at(index)->setBrush(Qt::red);
+    else
+        outputPins.at(index)->setBrush(Qt::blue);
+
 }
 
-void apainter::showInput(QGraphicsView *ptr)
+void apainter::drawLed(const QByteArray &Reader,int index)
 {
-    for(int i=0; i<inputList.count();i++){
-        if(inputList.at(i)->isUnderMouse()){
-            ptr->setCursor(Qt::PointingHandCursor);
-            inputList.at(i)->show();
-        }
-        else
-            inputList.at(i)->hide();
-    }
+    if(Reader.contains("HIGH"))
+        Leds.at(index)->show();
+    else
+        Leds.at(index)->hide();
 }
 
-void apainter::turnOff()
+void apainter::turnOff(){
+
+    for(int i=0; i<outputPins.count();i++)
+        outputPins.at(i)->hide();
+
+    for(int i=0; i<Leds.count();i++)
+        Leds.at(i)->hide();
+
+    for(int i=0; i<inputPins.count();i++)
+        inputPins.at(i)->hide();
+
+
+    disableInputs.clear();
+
+}
+
+//-------------------------------------------------------//-------------------------------------------------------//
+
+void apainter::inputEvent(bool state)
 {
+    for(int i=0;i<inputPins.count();i++)
+        if(inputPins.at(i)->isUnderMouse() && !disableInputs.contains(i))
+            emit printInputpin(i, state);
+}
 
-    for(int i=0; i<outputList.count();i++)
-        delete outputList[i];
+void apainter::showInput()
+{
+    for(int i=0; i<inputPins.count();i++){
+        if(inputPins.at(i)->isUnderMouse() && !disableInputs.contains(i)){
+                m_view->setCursor(Qt::PointingHandCursor);
+                inputPins.at(i)->show();
+            }
+            else
+                inputPins.at(i)->hide();
 
-    outputList.clear();
-    outputStr.clear();
-
-
-    for(int i=0; i<inputList.count();i++)
-        delete inputList[i];
-
-    inputList.clear();
+    }
 }

@@ -194,6 +194,12 @@ void aeditortab::EditorSettings(int BoardIndex)
         font.setPointSize(11);
         BoardKey=":/files/Tiva/autoComplete.txt";
         break;
+    case RaspberryPi:
+        font.setFamily("Monospaced");
+        font.setFixedPitch(true);
+        font.setPointSize(12);
+        BoardKey=":/files/Arduino/autoComplete.txt";
+        break;
     default:
         break;
     }

@@ -212,6 +212,9 @@ void aproject::actionFinish()
     case Tiva:        
         Source=":/files/Tiva/Tiva";
         break;
+    case RaspberryPi:
+        Source=":/files/RaspberryPi";
+        break;
     default:
         break;
     }
@@ -251,6 +254,12 @@ void aproject::copyProjectFolders(QString src,  QString dst)
 
             if(Files.fileName()=="template.ino"){
                 filePath=dst+QDir::separator()+projectName+".ino";
+                QFile::copy(Files.filePath(),filePath);
+                QFile::setPermissions(filePath, QFile::WriteOwner | QFile::ReadOwner);
+            }
+
+            if(Files.fileName()=="template.pi"){
+                filePath=dst+QDir::separator()+projectName;
                 QFile::copy(Files.filePath(),filePath);
                 QFile::setPermissions(filePath, QFile::WriteOwner | QFile::ReadOwner);
             }

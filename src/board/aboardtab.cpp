@@ -31,30 +31,35 @@ bool aboardtab::loadFile(const QString &fileName)
 
     m_view->scale(widthScale, heightScale);
 
-    Painter=new apainter(m_view->getSvgItem());
+    Painter=new apainter(m_view, m_view->getSvgItem());
 
     return true;
+}
+
+
+//QOverload<int>::of(&QComboBox::currentIndexChanged) QGraphicsView
+//static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished)
+/*void aboardtab::showInput()
+{
+    Painter->showInput(m_view);
 }
 
 void aboardtab::inputEvent()
 {
     Painter->inputEvent();
+}*/
 
-}
-void aboardtab::showInput()
-{
-    Painter->showInput(m_view);
-}
 
 void aboardtab::turnOn()
 {
-    connect(m_view, &SvgView::showInput, this, &aboardtab::showInput);
-    connect(m_view, &SvgView::inputEvent, this, &aboardtab::inputEvent);
+    Painter->drawLed("HIGH", 0);    
+    connect(m_view, &SvgView::inputEvent, Painter, &apainter::inputEvent);
+    connect(m_view, &SvgView::showInput, Painter, &apainter::showInput);
 }
 
 void aboardtab::turnOff()
 {
+    disconnect(m_view, &SvgView::inputEvent, Painter, &apainter::inputEvent);
+    disconnect(m_view, &SvgView::showInput, Painter, &apainter::showInput);
     Painter->turnOff();
-    disconnect(m_view, &SvgView::showInput, this, &aboardtab::showInput);
-    disconnect(m_view, &SvgView::inputEvent, this, &aboardtab::inputEvent);
 }

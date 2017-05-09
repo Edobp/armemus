@@ -26,11 +26,6 @@ public:
     void turnOn();
     void turnOff();
 
-private slots:
-    void showInput();
-    void inputEvent();
-
-
 private:
     Ui::aboardtab *ui;
 

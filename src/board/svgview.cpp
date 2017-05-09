@@ -62,19 +62,20 @@ SvgView::SvgView(QWidget *parent)
     , m_renderer(Native)
     , m_svgItem(nullptr)
     , m_backgroundItem(nullptr)
-    , m_outlineItem(nullptr)
-{
+    , m_outlineItem(nullptr)    
+{    
     setMouseTracking(true);
     setScene(new QGraphicsScene(this));
-    setTransformationAnchor(AnchorUnderMouse);    
+    setTransformationAnchor(AnchorUnderMouse);
     //setDragMode(ScrollHandDrag);
     setViewportUpdateMode(FullViewportUpdate);
+    setCursor(Qt::OpenHandCursor);
 
 
     QPixmap tilePixmap(64, 64);
     tilePixmap.fill(Qt::white);
 
-    setBackgroundBrush(tilePixmap);     
+    setBackgroundBrush(tilePixmap);
 }
 
 void SvgView::drawBackground(QPainter *p, const QRectF &)
@@ -195,18 +196,24 @@ void SvgView::mousePressEvent(QMouseEvent *event)
 {
     if( event->buttons() & Qt::LeftButton ){
         m_originX = event->x();
-        m_originY = event->y();
+        m_originY = event->y();        
     }
 
     event->accept();
 
-    if(receivers(SIGNAL(inputEvent())))
-        emit inputEvent();
+    if(receivers(SIGNAL(inputEvent(bool)))){
+
+        if(event->button()==Qt::LeftButton)
+            emit inputEvent(true);
+        if(event->button()==Qt::RightButton)
+            emit inputEvent(false);
+    }
+
 }
 
 
 void SvgView::mouseMoveEvent(QMouseEvent *event)
-{    
+{
     setCursor(Qt::OpenHandCursor);
 
     if( event->buttons() & Qt::LeftButton ){
@@ -223,7 +230,7 @@ void SvgView::mouseMoveEvent(QMouseEvent *event)
         m_originY = event->y();
 
         event->accept();
-    }
+    }    
 
     event->ignore();
 

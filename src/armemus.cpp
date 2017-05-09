@@ -2,6 +2,7 @@
 #include "ui_armemus.h"
 
 #include <QScrollBar>
+#include <QStandardPaths>
 
 armemus::armemus(QWidget *parent) :
     QMainWindow(parent),
@@ -46,6 +47,8 @@ armemus::armemus(QWidget *parent) :
     DisableButtons();
     loadBoards();
     project = new aproject(this, boards);
+
+    IOBoard.clear();
 
     BuildProcess.setProcessChannelMode(QProcess::MergedChannels);
     QemuProcess.setProcessChannelMode(QProcess::MergedChannels);
@@ -159,7 +162,12 @@ void armemus::actionBuildOptions()
 }
 
 void armemus::actionBuild()
-{
+{        
+    if(QemuProcess.isOpen())
+        emit actionStop();
+
+    ui->actionPlay->setEnabled(false);
+
     BuildProcess.setProcessChannelMode(QProcess::MergedChannels);
     connect(&BuildProcess, &QProcess::readyRead, this, &armemus::printProcess);
     connect(&BuildProcess, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished), this, &armemus::closeProcess);
@@ -191,6 +199,7 @@ void armemus::actionBuild()
 
 void armemus::actionPlay()
 {
+
     ui->actionStop->setEnabled(true);
     ui->actionPlay->setEnabled(false);    
 
@@ -198,15 +207,10 @@ void armemus::actionPlay()
     outputBrowser->clear();
 
     QString File=projectInfo.path+"/"+projectInfo.name+"/Build/"+projectInfo.name+".ino.elf";
-    QString command="--eval-command";
+    QString command="--eval-command";        
 
-    board->turnOn();
-
-    board->Painter->drawInputs(IOBoard.pinsboard, IOBoard.whpin, IOBoard.pinRect);
-
-    board->Painter->drawLed(&IOBoard.ledsboard[0], IOBoard.whled, IOBoard.ledRect);
-
-    QemuProcess.setWorkingDirectory("/home/malo/");
+    //Qemu debe estar en el home
+    QemuProcess.setWorkingDirectory(QStandardPaths::standardLocations(QStandardPaths::HomeLocation).last());
 
     //QemuProcess.start("qemu-armemus/qemu-system-gnuarmeclipse", QStringList()<<"--mcu"<<"SAM3X8E"<<"--gdb"<<"tcp::1234"<<"-L"<<"qemu-armemus/"<<"--verbose"<<"--verbose");
     QemuProcess.start("qemu-armemus/qemu-system-gnuarmeclipse", QStringList()<<"--mcu"<<"SAMD21G18"<<"--gdb"<<"tcp::1234"<<"-L"<<"qemu-armemus/"<<"--verbose"<<"--verbose");
@@ -222,15 +226,19 @@ void armemus::actionPlay()
 
     connect(&QemuProcess, &QProcess::readyRead, this, &armemus::printProcess);
     connect(&QemuProcess, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished), this, &armemus::closeProcess);
+    connect(board->Painter, &apainter::printInputpin, this, &armemus::printInputpin);
+
+    board->turnOn();
 }
 
 void armemus::actionStop()
-{
+{    
     QemuProcess.close();
     GDBprocess.close();
 
     disconnect(&QemuProcess, &QProcess::readyRead, this, &armemus::printProcess);
     disconnect(&QemuProcess, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished), this, &armemus::closeProcess);
+    disconnect(board->Painter, &apainter::printInputpin, this, &armemus::printInputpin);
 
     board->turnOff();
     ui->actionPlay->setEnabled(true);
@@ -250,9 +258,7 @@ void armemus::actionCloseProject()
 
 void armemus::actionCloseFile()
 {
-
     editor->tabClose();
-
 }
 
 void armemus::loadBoards()
@@ -278,9 +284,11 @@ inline void armemus::clearWorkspace(){
     DisableButtons();
     delete outputBrowser;
     //delete editor;
-    //delete board;
+    board->Painter->clear();
+    delete board->Painter;
+    delete board;
     delete tabs;
-    IOBoard.clear();
+    IOBoard.clear();    
 }
 
 
@@ -328,7 +336,10 @@ inline void armemus::setWorkspace()
 
         project->getFilePath(FileBoard);
         editor->openFile(FileBoard);
-        board->loadFile(":/boards/"+boards[projectInfo.boardIndex].image);
+
+        if(board->loadFile(":/boards/"+boards[projectInfo.boardIndex].image))
+            board->Painter->setBoard(&IOBoard);
+
 
         existProject = true;
 
@@ -350,41 +361,37 @@ void  armemus::printProcess()
     if(BuildProcess.isReadable()){
         processReader=BuildProcess.readAll();
         outputBrowser->insertPlainText(processReader);
-        outputBrowser->verticalScrollBar()->setValue(outputBrowser->verticalScrollBar()->maximum());
     }
 
     else{           //if(QemuProcess.isReadable()){
+
         processReader=QemuProcess.readAll();
-        outputBrowser->insertPlainText(processReader);
-        outputBrowser->verticalScrollBar()->setValue(outputBrowser->verticalScrollBar()->maximum());
 
-        if(processReader.contains("HIGH") || processReader.contains("LOW")){
-            int j=processReader.count('\n');
+        if(processReader.contains("HIGH") || processReader.contains("LOW")){            
 
-            for(int i=0;i<j;i++){
+            while(processReader.count('\n')){
 
-                QByteArray singleLine(processReader.left(processReader.indexOf('\n')));
-
-                int index=getIndex(singleLine);
-
-                if(!board->Painter->outputStr.contains("Pin"+QString::number(index)))
-                    board->Painter->drawPin(&IOBoard.pinsboard[index], IOBoard.whpin, IOBoard.pinRect);
-
-                if(IOBoard.pinsboard[index].led!=-1){
-                    if(!board->Painter->outputStr.contains("Led"+QString::number(IOBoard.pinsboard[index].led)))
-                        board->Painter->drawLed(&IOBoard.ledsboard[IOBoard.pinsboard[index].led], IOBoard.whled, IOBoard.ledRect);
-
-                    QByteArray copyOut(singleLine);
-                    copyOut=copyOut.mid(copyOut.indexOf(":"));
-                    copyOut.insert(0,"led");
-                    board->Painter->drawStatus(copyOut, IOBoard.pinsboard[index].led);
-                }
-                board->Painter->drawStatus(singleLine, index);
+                QByteArray singleLine(processReader.left(processReader.indexOf(":")));
+                int index=IOBoard.pinString.indexOf(singleLine);
+                singleLine=processReader.left(processReader.indexOf('\n'));
                 processReader=processReader.mid(processReader.indexOf("\n")+1);
 
+                if(index==-1 || index>=IOBoard.pinsboard.count())
+                    continue;
+
+                board->Painter->drawPin(singleLine, index);
+
+                if(IOBoard.pinsboard[index].led!=-1)
+                    board->Painter->drawLed(singleLine, IOBoard.pinsboard[index].led);
+
+                outputBrowser->append(singleLine);
             }
         }
+        else
+            outputBrowser->insertPlainText(processReader);
     }
+
+    outputBrowser->verticalScrollBar()->setValue(outputBrowser->verticalScrollBar()->maximum());
 }
 
 
@@ -440,17 +447,22 @@ void armemus::update_editorStatus()
 
 }
 
-int armemus::getIndex(const QByteArray &processReader)
+
+void armemus::printInputpin(int index, bool state)
 {
-    QString Reader(processReader);
-    int index;
+    QString outputState;
 
-    Reader=Reader.simplified();
-    Reader.replace(Reader.indexOf(":"),Reader.size(),"");
-    index=IOBoard.pinString.indexOf(Reader);
+    if(state)
+        outputState="HIGH";
+    else
+        outputState="LOW";
 
-    return index;
+    statusBar()->showMessage(tr("%1 level at %2").arg(outputState).arg(IOBoard.pinString.at(index)), 1500);
+    //statusBar()->showMessage(tr("Input at PIN %1").arg(index), 1500);
+
+
 }
+
 
 
 void armemus::closeEvent (QCloseEvent *event)

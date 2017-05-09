@@ -5,6 +5,11 @@ IOpins::IOpins()
     clear();
 }
 
+IOpins::~IOpins()
+{
+    clear();
+}
+
 void IOpins::clear()
 {
     pinString.clear();
@@ -24,7 +29,7 @@ void IOpins::setBoard(int index)
     QString Reader;
     QString fileName;
 
-    switch (index) {    
+    switch (index) {    //crear case para cada tarjeta
     case ArduinoDue:
         fileName=":/files/Arduino/I-O/Arduino Due.txt";
         break;

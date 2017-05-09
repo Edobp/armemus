@@ -32,7 +32,8 @@ private slots:
     void actionPlay();
     void actionStop();
 
-    void  printProcess();
+    void printProcess();
+    void printInputpin(int index, bool state);
 
 private:
     Ui::armemus *ui;
@@ -78,8 +79,7 @@ private:
 
     //App events
     void update_editorStatus();
-    bool confirmSave();
-    int getIndex(const QByteArray &processReader);
+    bool confirmSave();    
     void closeEvent (QCloseEvent *event);
 };
 

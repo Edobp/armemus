@@ -5,5 +5,6 @@
         <file alias="boards/Feather_M0.svg">images/boards/Feather_M0.svg</file>
         <file alias="boards/Tiva_TM4C123G.svg">images/boards/Tiva_TM4C123G.svg</file>
         <file alias="boards/boards.txt">files/boards.txt</file>
+        <file alias="boards/RaspberryPi_Zero.svg">images/boards/RaspberryPi_Zero.svg</file>
     </qresource>
 </RCC>

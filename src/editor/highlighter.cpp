@@ -67,6 +67,9 @@ Highlighter::Highlighter(int BoardIndex, QTextDocument *parent)
     case Tiva:
         TivaHighlighter();
         break;
+    case RaspberryPi:
+        ArduinoHighlighter();
+        break;
     default:
         break;
     }

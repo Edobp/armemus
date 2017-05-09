@@ -71,7 +71,7 @@ public:
     QGraphicsSvgItem *getSvgItem();
 
 signals:
-    void inputEvent();
+    void inputEvent(bool state);
     void showInput();
 
 public slots:
@@ -94,7 +94,7 @@ private:
 
     QImage m_image;
 
-    qreal m_originX, m_originY;
+    qreal m_originX, m_originY;    
 
 };
 #endif // SVGVIEW_H

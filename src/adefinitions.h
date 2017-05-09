@@ -9,7 +9,7 @@
 
 // ARMEmuS typedef
 
-enum BoardType {ArduinoDue, ArduinoZero, Feather, Tiva};
+enum BoardType {ArduinoDue, ArduinoZero, Feather, RaspberryPi, Tiva};
 
 typedef struct
 {

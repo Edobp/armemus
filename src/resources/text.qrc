@@ -16,5 +16,6 @@
         <file>files/Tiva/Tiva/template/src/main.c</file>
         <file>files/Arduino/I-O/Arduino Due.txt</file>
         <file>files/Arduino/I-O/Arduino Zero.txt</file>
+        <file>files/RaspberryPi/template/template.pi</file>
     </qresource>
 </RCC>

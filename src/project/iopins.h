@@ -6,12 +6,11 @@
 
 
 class IOpins
-{    
-
-
+{
 public:
 
     IOpins();
+    virtual ~IOpins();
 
     QList<QString> pinString;
     QList<PIN> pinsboard;

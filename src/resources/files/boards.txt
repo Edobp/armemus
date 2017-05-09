@@ -2,4 +2,5 @@
 Arduino-Due Arduino_Due.svg
 Arduino-Zero	Arduino_Zero.svg
 Feather-M0	Feather_M0.svg
+RaspberryPi-Zero RaspberryPi_Zero.svg
 Tiva-TM4C123G	Tiva_TM4C123G.svg
