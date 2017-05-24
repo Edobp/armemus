@@ -31,6 +31,7 @@ void apainter::clear()
     Leds.clear();
     inputPins.clear();
     disableInputs.clear();
+    inputsState.clear();
 }
 
 
@@ -47,7 +48,7 @@ void apainter::setBoard(const IOpins *ptr_IOpins)
          ptr_pin->setPen(Qt::NoPen);
          ptr_pin->hide();
 
-         outputPins.append(ptr_pin);
+         outputPins.append(ptr_pin);         
     }
 
     for(int i=0; i<ptr_IOpins->ledsboard.count(); i++){
@@ -64,7 +65,7 @@ void apainter::setBoard(const IOpins *ptr_IOpins)
          Leds.append(ptr_led);
     }
 
-//-------------------------------------------------------//-------------------------------------------------------//
+//-------------------------------------------------------//-------------------------------------------------------//    
 
     QPen lines(Qt::white);
 
@@ -80,7 +81,9 @@ void apainter::setBoard(const IOpins *ptr_IOpins)
          ptr_input->hide();
 
          inputPins.append(ptr_input);
-    }
+         inputsState.append(false);
+
+    }    
 
 //-------------------------------------------------------//-------------------------------------------------------//
 
@@ -119,9 +122,10 @@ void apainter::turnOff(){
     for(int i=0; i<Leds.count();i++)
         Leds.at(i)->hide();
 
-    for(int i=0; i<inputPins.count();i++)
+    for(int i=0; i<inputPins.count();i++){
         inputPins.at(i)->hide();
-
+        inputsState[i]=false;
+    }
 
     disableInputs.clear();
 
@@ -129,11 +133,13 @@ void apainter::turnOff(){
 
 //-------------------------------------------------------//-------------------------------------------------------//
 
-void apainter::inputEvent(bool state)
+void apainter::inputEvent()
 {
-    for(int i=0;i<inputPins.count();i++)
+    for(int i=0;i<inputPins.count();i++){
         if(inputPins.at(i)->isUnderMouse() && !disableInputs.contains(i))
-            emit printInputpin(i, state);
+            emit printInputpin(i, inputsState[i]=!inputsState.at(i));
+        //=!inputsState.at(i);
+    }
 }
 
 void apainter::showInput()

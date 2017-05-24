@@ -52,6 +52,13 @@ armemus::armemus(QWidget *parent) :
 
     BuildProcess.setProcessChannelMode(QProcess::MergedChannels);
     QemuProcess.setProcessChannelMode(QProcess::MergedChannels);
+
+    //-----------------------------------------------
+
+    process.setWorkingDirectory(QStandardPaths::standardLocations(QStandardPaths::HomeLocation).last());
+    process.setProcessChannelMode(QProcess::MergedChannels);
+
+    connect(&process, &QProcess::readyRead, this, &armemus::tcpPrinter);    
 }
 
 
@@ -204,6 +211,8 @@ void armemus::actionPlay()
     ui->actionPlay->setEnabled(false);    
 
     tabs->setCurrentIndex(1);
+/*
+
     outputBrowser->clear();
 
     QString File=projectInfo.path+"/"+projectInfo.name+"/Build/"+projectInfo.name+".ino.elf";
@@ -225,24 +234,36 @@ void armemus::actionPlay()
     QemuProcess.waitForReadyRead(-1);
 
     connect(&QemuProcess, &QProcess::readyRead, this, &armemus::printProcess);
-    connect(&QemuProcess, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished), this, &armemus::closeProcess);
+    connect(&QemuProcess, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished), this, &armemus::closeProcess);*/
+
+
+    process.start("qemu-armemus/server");
+    process.waitForStarted(-1);
+
     connect(board->Painter, &apainter::printInputpin, this, &armemus::printInputpin);
 
     board->turnOn();
+
+
 }
 
 void armemus::actionStop()
 {    
-    QemuProcess.close();
+    /*QemuProcess.close();
     GDBprocess.close();
 
     disconnect(&QemuProcess, &QProcess::readyRead, this, &armemus::printProcess);
     disconnect(&QemuProcess, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished), this, &armemus::closeProcess);
-    disconnect(board->Painter, &apainter::printInputpin, this, &armemus::printInputpin);
 
-    board->turnOff();
+*/
+
     ui->actionPlay->setEnabled(true);
     ui->actionStop->setEnabled(false);
+
+    disconnect(board->Painter, &apainter::printInputpin, this, &armemus::printInputpin);
+    board->turnOff();
+
+    process.close();
 }
 
 void armemus::actionCloseProject()
@@ -305,7 +326,7 @@ inline void armemus::DisableButtons()
     //toolbar
     ui->actionSave->setEnabled(false);
     ui->actionBuild->setEnabled(false);
-    ui->actionPlay->setEnabled(false);
+    //ui->actionPlay->setEnabled(false);
     ui->actionStop->setEnabled(false);
     ui->actionStep->setEnabled(false);
 }
@@ -371,10 +392,10 @@ void  armemus::printProcess()
 
             while(processReader.count('\n')){
 
-                QByteArray singleLine(processReader.left(processReader.indexOf(":")));
-                int index=IOBoard.pinString.indexOf(singleLine);
-                singleLine=processReader.left(processReader.indexOf('\n'));
+                QByteArray singleLine(processReader.left(processReader.indexOf("\n")));
                 processReader=processReader.mid(processReader.indexOf("\n")+1);
+
+                int index=IOBoard.pinString.indexOf(singleLine.left(singleLine.indexOf(":")));
 
                 if(index==-1 || index>=IOBoard.pinsboard.count())
                     continue;
@@ -449,18 +470,19 @@ void armemus::update_editorStatus()
 
 
 void armemus::printInputpin(int index, bool state)
-{
-    QString outputState;
+{    
 
     if(state)
-        outputState="HIGH";
+        inputLevel="HIGH at ";
     else
-        outputState="LOW";
+        inputLevel="LOW at ";
 
-    statusBar()->showMessage(tr("%1 level at %2").arg(outputState).arg(IOBoard.pinString.at(index)), 1500);
+    //statusBar()->showMessage(tr("%1 level at %2").arg(outputState).arg(IOBoard.pinString.at(index)), 1500);
     //statusBar()->showMessage(tr("Input at PIN %1").arg(index), 1500);
 
 
+    inputLevel+=IOBoard.pinString.at(index);
+    tcpConection();
 }
 
 
@@ -485,3 +507,56 @@ void armemus::closeEvent (QCloseEvent *event)
     else
         event->accept();
 }
+
+
+//--------------------------
+
+void armemus::tcpPrinter()
+{
+    QByteArray reader;
+
+    reader=process.readAll();
+
+    outputBrowser->append(reader);
+}
+
+void armemus::tcpConection()
+{
+    socket = new QTcpSocket(this);
+
+    connect(socket, &QTcpSocket::connected, this, &armemus::connected);
+    connect(socket, &QTcpSocket::disconnected, this, &armemus::disconnected);
+    connect(socket, &QTcpSocket::readyRead, this, &armemus::readyRead);
+    //connect(socket, &QTcpSocket::bytesWritten, this, &armemus::bytesWritten);
+
+    socket->connectToHost("localhost", 4321);
+
+    if(!socket->waitForDisconnected(1000))
+    {
+        //qDebug() << "Error: " << socket->errorString();
+        tcpConection();
+    }
+}
+
+void armemus::connected()
+{
+    //outputBrowser->clear();
+    //outputBrowser->append("Connected!");
+    socket->write(inputLevel);
+}
+
+void armemus::readyRead()
+{
+    qDebug() << "Reading...";
+    qDebug() << socket->readAll();
+}
+
+void armemus::disconnected()
+{
+    //qDebug() << "Disconnected!";
+    process.close();
+    process.start("qemu-armemus/server");
+    process.waitForStarted(-1);
+
+}
+

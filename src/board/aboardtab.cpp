@@ -36,20 +36,6 @@ bool aboardtab::loadFile(const QString &fileName)
     return true;
 }
 
-
-//QOverload<int>::of(&QComboBox::currentIndexChanged) QGraphicsView
-//static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished)
-/*void aboardtab::showInput()
-{
-    Painter->showInput(m_view);
-}
-
-void aboardtab::inputEvent()
-{
-    Painter->inputEvent();
-}*/
-
-
 void aboardtab::turnOn()
 {
     Painter->drawLed("HIGH", 0);    

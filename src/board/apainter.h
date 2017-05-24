@@ -21,6 +21,10 @@ class apainter : public QObject
     QList<QAbstractGraphicsShapeItem*> inputPins;    
     QList<int> disableInputs;
 
+    QList<bool> inputsState;
+
+
+
 public:
     apainter(QGraphicsView * ptr_view, QGraphicsSvgItem *ptr_svgItem);
     virtual ~apainter();
@@ -35,7 +39,7 @@ public:
     void clear();
 
 public slots:
-    void inputEvent(bool state);
+    void inputEvent();
     void showInput();
 
 signals:

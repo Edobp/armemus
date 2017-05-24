@@ -21,6 +21,9 @@
 #include <QTreeWidgetItem>
 #include <QWidget>
 
+#include <QTcpSocket>
+#include <QAbstractSocket>
+
 #include <QCompleter>
 #include <QAbstractItemModel>
 

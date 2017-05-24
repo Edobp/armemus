@@ -71,7 +71,7 @@ public:
     QGraphicsSvgItem *getSvgItem();
 
 signals:
-    void inputEvent(bool state);
+    void inputEvent();
     void showInput();
 
 public slots:

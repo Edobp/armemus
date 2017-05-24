@@ -201,13 +201,8 @@ void SvgView::mousePressEvent(QMouseEvent *event)
 
     event->accept();
 
-    if(receivers(SIGNAL(inputEvent(bool)))){
-
-        if(event->button()==Qt::LeftButton)
-            emit inputEvent(true);
-        if(event->button()==Qt::RightButton)
-            emit inputEvent(false);
-    }
+    if(receivers(SIGNAL(inputEvent())))
+        emit inputEvent();
 
 }
 

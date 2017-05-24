@@ -81,6 +81,19 @@ private:
     void update_editorStatus();
     bool confirmSave();    
     void closeEvent (QCloseEvent *event);
+
+    //--------------------
+
+    QProcess process;
+    QTcpSocket *socket;
+
+    void tcpConection();
+    void tcpPrinter();
+    void readyRead();
+    void connected();
+    void disconnected();
+
+     QByteArray  inputLevel;
 };
 
 #endif // armemus_H
