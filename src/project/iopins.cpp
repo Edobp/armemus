@@ -36,6 +36,9 @@ void IOpins::setBoard(int index)
     case ArduinoZero:
         fileName=":/files/Arduino/I-O/Arduino Zero.txt";
         break;
+    case Tiva:
+        fileName=":/files/Tiva/pinesTivaC.txt";
+        break;
     default:
         fileName=":/files/Arduino/I-O/Arduino Zero.txt";
         break;

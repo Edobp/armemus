@@ -84,7 +84,7 @@ private:
 
     //--------------------
 
-    QProcess process;
+    //QProcess process;
     QTcpSocket *socket;
 
     void tcpConection();

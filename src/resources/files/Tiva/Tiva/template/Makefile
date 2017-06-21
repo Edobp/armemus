@@ -24,7 +24,8 @@ TIVAWARE_PATH = /home/malo/Escritorio/Builders/SW-EK-TM4C123GXL
 LD_SCRIPT = $(MCU).ld
 
 # define flags
-CFLAGS = -g -mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=softfp
+#CFLAGS = -g -mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=softfp
+CFLAGS = -g -mthumb -mcpu=cortex-m4 -mfloat-abi=soft
 CFLAGS +=-Os -ffunction-sections -fdata-sections -MD -std=c99 -Wall
 CFLAGS += -pedantic -DPART_$(MCU) -c -I$(TIVAWARE_PATH)
 CFLAGS += -DTARGET_IS_BLIZZARD_RA1
@@ -53,10 +54,10 @@ all: $(OUTDIR)/$(TARGET).bin
 $(OUTDIR)/%.o: src/%.c | $(OUTDIR)
 	$(CC) -o $@ $^ $(CFLAGS)
 
-$(OUTDIR)/a.out: $(OBJECTS)
+$(OUTDIR)/$(TARGET).elf: $(OBJECTS)
 	$(LD) -o $@ $^ $(LDFLAGS)
 
-$(OUTDIR)/main.bin: $(OUTDIR)/a.out
+$(OUTDIR)/main.bin: $(OUTDIR)/$(TARGET).elf
 	$(OBJCOPY) -O binary $< $@
 
 # create the output directory
@@ -68,7 +69,6 @@ flash:
 
 #-$(RM) $(OUTDIR)/* @rm -rf ${COMPILER} ${wildcard *~}
 clean:
-	 
 	 -$(RM) $(OUTDIR)/*
 
 .PHONY: all clean

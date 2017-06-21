@@ -67,17 +67,18 @@ void apainter::setBoard(const IOpins *ptr_IOpins)
 
 //-------------------------------------------------------//-------------------------------------------------------//    
 
-    QPen lines(Qt::white);
+    QPen lowInput(Qt::blue);
 
     for(int i=0; i<ptr_IOpins->pinsboard.count(); i++){
          QAbstractGraphicsShapeItem *ptr_input;
 
          if(ptr_IOpins->pinRect)
-             ptr_input=new QGraphicsRectItem(ptr_IOpins->pinsboard.at(i).x-2, ptr_IOpins->pinsboard.at(i).y-2, ptr_IOpins->whpin[0]+4, ptr_IOpins->whpin[1]+4, m_svgItem);
+             ptr_input=new QGraphicsRectItem(ptr_IOpins->pinsboard.at(i).x, ptr_IOpins->pinsboard.at(i).y, ptr_IOpins->whpin[0], ptr_IOpins->whpin[1], m_svgItem);
          else
-             ptr_input=new QGraphicsEllipseItem(ptr_IOpins->pinsboard.at(i).x-2, ptr_IOpins->pinsboard.at(i).y-2, ptr_IOpins->whpin[0]+4, ptr_IOpins->whpin[1]+4, m_svgItem);
+             ptr_input=new QGraphicsEllipseItem(ptr_IOpins->pinsboard.at(i).x, ptr_IOpins->pinsboard.at(i).y, ptr_IOpins->whpin[0], ptr_IOpins->whpin[1], m_svgItem);
+             //ptr_input=new QGraphicsEllipseItem(ptr_IOpins->pinsboard.at(i).x, ptr_IOpins->pinsboard.at(i).y, ptr_IOpins->whpin[0], ptr_IOpins->whpin[1], m_svgItem);
 
-         ptr_input->setPen(lines);
+         ptr_input->setPen(lowInput);
          ptr_input->hide();
 
          inputPins.append(ptr_input);
@@ -104,6 +105,8 @@ void apainter::drawPin(const QByteArray &Reader,int index)
     else
         outputPins.at(index)->setBrush(Qt::blue);
 
+    inputPins.at(index)->hide();
+
 }
 
 void apainter::drawLed(const QByteArray &Reader,int index)
@@ -112,9 +115,15 @@ void apainter::drawLed(const QByteArray &Reader,int index)
         Leds.at(index)->show();
     else
         Leds.at(index)->hide();
+
+    if (index==0)
+        for(int i=0; i<inputPins.count();i++)
+            inputPins.at(i)->show();
 }
 
 void apainter::turnOff(){
+
+    QPen lowInput(Qt::blue);
 
     for(int i=0; i<outputPins.count();i++)
         outputPins.at(i)->hide();
@@ -124,6 +133,7 @@ void apainter::turnOff(){
 
     for(int i=0; i<inputPins.count();i++){
         inputPins.at(i)->hide();
+        inputPins.at(i)->setPen(lowInput);
         inputsState[i]=false;
     }
 
@@ -135,22 +145,25 @@ void apainter::turnOff(){
 
 void apainter::inputEvent()
 {
+    QPen lowInput(Qt::blue);
+    QPen highInput(Qt::red);
+
     for(int i=0;i<inputPins.count();i++){
-        if(inputPins.at(i)->isUnderMouse() && !disableInputs.contains(i))
+        if(inputPins.at(i)->isUnderMouse() && !disableInputs.contains(i)){            
             emit printInputpin(i, inputsState[i]=!inputsState.at(i));
+            if(inputsState[i])
+                inputPins.at(i)->setPen(highInput);
+            else
+                inputPins.at(i)->setPen(lowInput);
+
         //=!inputsState.at(i);
+        }
     }
 }
 
 void apainter::showInput()
 {
-    for(int i=0; i<inputPins.count();i++){
-        if(inputPins.at(i)->isUnderMouse() && !disableInputs.contains(i)){
+    for(int i=0; i<inputPins.count();i++)
+        if(inputPins.at(i)->isUnderMouse() && !disableInputs.contains(i))
                 m_view->setCursor(Qt::PointingHandCursor);
-                inputPins.at(i)->show();
-            }
-            else
-                inputPins.at(i)->hide();
-
-    }
 }
