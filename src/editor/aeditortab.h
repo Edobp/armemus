@@ -1,3 +1,17 @@
+/*
+ * ARMEmuS editor tab
+ *
+ * Copyright (c) 2017 ARMEmuS
+ *
+ * Authors:
+ *  Sebastian Marin Velasquez  <jhoanmarin89@hotmail.com>
+ *  Nataly Vanegas Restrepo  <nvanegasr@uqvirtual.edu.co>
+ *  Mario Alberto López Ocampo  <malo1986@msn.com>
+ *
+ * This work is licensed under the terms of the GNU GPL, version 2 or later.
+ * See the COPYING file in the top-level directory.
+ */
+
 #ifndef aeditortab_H
 #define aeditortab_H
 

@@ -1,4 +1,18 @@
-﻿#include "aproject.h"
+﻿/*
+ * ARMEmuS wizard
+ *
+ * Copyright (c) 2017 ARMEmuS
+ *
+ * Authors:
+ *  Mario Alberto López Ocampo  <malo1986@msn.com>
+ *  Cristian Mauricio Cardona Cuervo <cristianc223@hotmail.com>
+ *  Giovanny Rodriguez Sánchez  <giovannyrs19@gmail.com>
+ *
+ * This work is licensed under the terms of the GNU GPL, version 2 or later.
+ * See the COPYING file in the top-level directory.
+ */
+
+#include "aproject.h"
 #include "ui_aproject.h"
 
 #include <QFileDialog>
@@ -117,17 +131,7 @@ void aproject::actionFinish()
 {
     projectName = ui->nameLineEdit->text();
     projectPath = ui->pathLineEdit->text();
-    boardIndex = ui->boardComboBox->currentIndex();
-
-    // Create folder that contains the project
-    QDir dir(projectPath+"/"+projectName);    
-
-    if (!dir.exists()) {
-        dir.mkpath(".");
-    }
-
-    // Create file .apf that contains the project configurations
-    QXmlStreamWriter xmlWriter;
+    boardIndex = ui->boardComboBox->currentIndex();        
 
     QFile file(projectPath+"/"+projectName+"/"+projectName+".apf");
 
@@ -137,7 +141,7 @@ void aproject::actionFinish()
         const QMessageBox::StandardButton sel =
                 QMessageBox::question(this,
                                       tr(APROJECT_NAME),
-                                      tr("Project \"%1.apf\" already exists\nDo you want to overwrite it?\n(Note: All previous project folders created will be removed)").arg(projectName));
+                                      tr("Project \"%1.apf\" already exists. Do you want to overwrite it?\n(Note: All previous project folders created will be removed)").arg(projectName));
         switch (sel) {
         case QMessageBox::Yes:
             clearProjectFiles();
@@ -153,7 +157,40 @@ void aproject::actionFinish()
         }
     }
 
-//--------------------------------------------------------------------------------------------------------
+    // Create folder that contains the project
+    QDir dir(projectPath+"/"+projectName);
+
+    if (!dir.exists()) {
+        dir.mkpath(".");
+    }
+
+    dir.mkpath("Build");
+
+    QString Source;
+    QString Destination(projectPath+"/"+projectName);
+
+    switch (boardIndex-1) {
+    case ArduinoDue:
+    case ArduinoZero:
+    case Feather:        
+        Source=":/files/Arduino/Arduino";
+        break;
+    case Tiva:        
+        Source=":/files/Tiva/Tiva";
+        break;
+    case RaspberryPi:
+        Source=":/files/RaspberryPi";
+        break;
+    default:
+        break;
+    }
+
+    copyProjectFolders(Source, Destination);
+
+    //--------------------------------------------------------------------------------------------------------
+
+    // Create file .apf that contains the project configurations
+    QXmlStreamWriter xmlWriter;
 
     if (!file.open(QIODevice::WriteOnly)){
         QMessageBox::warning(0, "Error!", "Error opening file");
@@ -166,6 +203,32 @@ void aproject::actionFinish()
         xmlWriter.setAutoFormatting(true);
 
         xmlWriter.writeStartElement("Armemus_Project_File");
+
+        //--------------------------------------------------------------------------------------------------------
+
+        xmlWriter.writeStartElement("Project");
+
+        xmlWriter.writeStartElement("Path");
+        xmlWriter.writeAttribute("path",projectPath);
+        xmlWriter.writeEndElement();
+
+        xmlWriter.writeStartElement("Name");
+        xmlWriter.writeAttribute("name",projectName);
+        xmlWriter.writeEndElement();
+
+        xmlWriter.writeStartElement("Board");
+        xmlWriter.writeAttribute("index",QString::number(boardIndex-1));
+        xmlWriter.writeEndElement();
+
+        xmlWriter.writeStartElement("File_Path"); //Direct acces to file
+        xmlWriter.writeAttribute("filePath",filePath);
+        xmlWriter.writeEndElement();
+
+
+
+        xmlWriter.writeEndElement();
+
+        //--------------------------------------------------------------------------------------------------------
 
         xmlWriter.writeStartElement("Compiler");
 
@@ -198,28 +261,10 @@ void aproject::actionFinish()
         xmlWriter.writeEndDocument();
     }
 
-    dir.mkpath("Build");
 
-    QString Source;
-    QString Destination(projectPath+"/"+projectName);
+    //--------------------------------------------------------------------------------------------------------
 
-    switch (boardIndex-1) {
-    case ArduinoDue:
-    case ArduinoZero:
-    case Feather:        
-        Source=":/files/Arduino/Arduino";
-        break;
-    case Tiva:        
-        Source=":/files/Tiva/Tiva";
-        break;
-    case RaspberryPi:
-        Source=":/files/RaspberryPi";
-        break;
-    default:
-        break;
-    }
 
-    copyProjectFolders(Source, Destination);
     this->close();
 }
 

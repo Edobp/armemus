@@ -1,3 +1,17 @@
+/*
+ * ARMEmuS board viewer tab
+ *
+ * Copyright (c) 2017 ARMEmuS
+ *
+ * Authors:
+ *  Eduardo Augusto Bermúdez Parra  <edobp5@gmail.com>
+ *  Alex Román López Coy  <alex.roman.lopez@gmail.com>
+ *  Mario Alberto López Ocampo  <malo1986@msn.com>
+ *
+ * This work is licensed under the terms of the GNU GPL, version 2 or later.
+ * See the COPYING file in the top-level directory.
+ */
+
 #ifndef Aboardtab_H
 #define Aboardtab_H
 

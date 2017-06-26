@@ -27,6 +27,8 @@
 #include <QCompleter>
 #include <QAbstractItemModel>
 
+#include <QXmlStreamReader>
+
 // ARMEmuS Include files
 
 #include "board/svgview.h"

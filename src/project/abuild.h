@@ -1,3 +1,16 @@
+/*
+ * ARMEmuS build options
+ *
+ * Copyright (c) 2017 ARMEmuS
+ *
+ * Authors:
+ *  Giovanny Rodriguez Sánchez  <giovannyrs19@gmail.com>
+ *  Camilo Eduardo Arenas Saavedra  <camiloarenassaavedra@gmail.com>
+ *
+ * This work is licensed under the terms of the GNU GPL, version 2 or later.
+ * See the COPYING file in the top-level directory.
+ */
+
 #ifndef ABuild_H
 #define ABuild_H
 

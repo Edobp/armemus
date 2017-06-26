@@ -1,3 +1,16 @@
+/*
+ * ARMEmuS editor autocomplete
+ *
+ * Copyright (c) 2017 ARMEmuS
+ *
+ * Authors:
+ *  Sebastian Marin Velasquez  <jhoanmarin89@hotmail.com>
+ *  Nataly Vanegas Restrepo  <nvanegasr@uqvirtual.edu.co>
+ *
+ * This work is licensed under the terms of the GNU GPL, version 2 or later.
+ * See the COPYING file in the top-level directory.
+ */
+
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.

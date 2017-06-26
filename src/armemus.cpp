@@ -53,10 +53,7 @@ armemus::armemus(QWidget *parent) :
     BuildProcess.setProcessChannelMode(QProcess::MergedChannels);
     QemuProcess.setProcessChannelMode(QProcess::MergedChannels);
 
-    //-----------------------------------------------
-
-    /*process.setWorkingDirectory(QStandardPaths::standardLocations(QStandardPaths::HomeLocation).last());
-    process.setProcessChannelMode(QProcess::MergedChannels);*/
+    //-----------------------------------------------    
 
     socket = new QTcpSocket(this);
 
@@ -76,10 +73,8 @@ void armemus::actionNew()
 {
     update_editorStatus();
 
-    if (!existProject)
-        setWorkspace();
+    if (existProject){
 
-    else{
         if(QemuProcess.isOpen())
             emit actionStop();
         const QMessageBox::StandardButton sel =
@@ -99,8 +94,16 @@ void armemus::actionNew()
             break;
         }
         clearWorkspace();
+
+    }
+
+    project->clear();
+    project->exec();
+    project->getInfo(projectInfo);
+    project->getFilePath(FileBoard);
+    if (!projectInfo.name.isEmpty() && !projectInfo.path.isEmpty())
         setWorkspace();
-        }
+
 }
 
 
@@ -112,8 +115,68 @@ void armemus::actionNewFile()
 
 void armemus::actionOpen()
 {
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Proyect"), QString(),
-                tr("Proyect Files (*.apf)"));
+    update_editorStatus();
+
+    if (existProject){
+
+        if(QemuProcess.isOpen())
+            emit actionStop();
+        const QMessageBox::StandardButton sel =
+                QMessageBox::question(this,
+                                      tr(APROJECT_NAME),
+                                      tr("Do you want to close this project and open another one?"));
+
+        switch (sel) {
+        case QMessageBox::Yes:
+            if(confirmSave())
+                break;
+            else
+                return;
+        case QMessageBox::No:
+            return;
+        default:
+            break;
+        }
+
+        clearWorkspace();
+
+    }
+
+    QFileDialog openWindow(this, tr("Open Proyect"), QString(),
+                           tr("Proyect Files (*.apf)"));
+    openWindow.setDirectory(QStandardPaths::standardLocations(QStandardPaths::HomeLocation).last());
+
+    QString projectName = openWindow.getOpenFileName();
+
+    if(projectName.isEmpty())
+        return;
+
+    QFile file(projectName);
+
+    file.open(QFile::ReadOnly);
+
+    QXmlStreamReader xmlReader(file.readAll());
+    file.close();    
+
+    while(!xmlReader.atEnd()){
+        xmlReader.readNext();
+        if(xmlReader.isStartElement()){
+            if(xmlReader.name()=="Path")
+                projectInfo.path=xmlReader.attributes().first().value().toString();
+            if(xmlReader.name()=="Name")
+                projectInfo.name=xmlReader.attributes().first().value().toString();
+            if(xmlReader.name()=="Board")
+                projectInfo.boardIndex=xmlReader.attributes().first().value().toInt();
+            if(xmlReader.name()=="File_Path")
+                FileBoard=xmlReader.attributes().first().value().toString();
+        }
+    }
+
+    if(!projectInfo.name.isEmpty() && !projectInfo.path.isEmpty())
+        setWorkspace();
+
+    ui->actionBuild->setEnabled(true);
+
 }
 
 void armemus::actionOpenFile()
@@ -339,52 +402,41 @@ inline void armemus::DisableButtons()
     //toolbar
     ui->actionSave->setEnabled(false);
     ui->actionBuild->setEnabled(false);
-    //ui->actionPlay->setEnabled(false);
+    ui->actionPlay->setEnabled(false);
     ui->actionStop->setEnabled(false);
     ui->actionStep->setEnabled(false);
 }
 
 inline void armemus::setWorkspace()
 {
-    project->clear();
-    project->exec();
-    project->getInfo(projectInfo);
+    outputBrowser = new QTextBrowser;
 
-    if ( !projectInfo.name.isEmpty() && !projectInfo.path.isEmpty() ){
+    tabs = new QTabWidget;
 
-        outputBrowser = new QTextBrowser;
+    editor = new aeditortab(projectInfo.boardIndex);
+    board = new aboardtab;
+    IOBoard.setBoard(projectInfo.boardIndex);
 
-        tabs = new QTabWidget;
+    tabs->addTab(editor,"Code");
+    tabs->addTab(board,"Board");
 
-        editor = new aeditortab(projectInfo.boardIndex);
-        board = new aboardtab;
-        IOBoard.setBoard(projectInfo.boardIndex);
+    ui->mainLayout->addWidget(tabs);
+    ui->outputLayout->addWidget(outputBrowser);
 
-        tabs->addTab(editor,"Code");
-        tabs->addTab(board,"Board");
+    tabs->setCurrentIndex(0);    
+    editor->openFile(FileBoard);
 
-        ui->mainLayout->addWidget(tabs);
-        ui->outputLayout->addWidget(outputBrowser);
+    if(board->loadFile(":/boards/"+boards[projectInfo.boardIndex].image))
+        board->Painter->setBoard(&IOBoard);
 
-        tabs->setCurrentIndex(0);
+    existProject = true;    
 
-        project->getFilePath(FileBoard);
-        editor->openFile(FileBoard);
-
-        if(board->loadFile(":/boards/"+boards[projectInfo.boardIndex].image))
-            board->Painter->setBoard(&IOBoard);
-
-
-        existProject = true;
-
-        ui->actionNewFile->setEnabled(true);
-        ui->actionOpenFile->setEnabled(true);
-        ui->actionCloseFile->setEnabled(true);
-        ui->actionCloseProject->setEnabled(true);
-        ui->actionBuildOptions->setEnabled(true);
-        ui->actionSave->setEnabled(true);
-
-    }
+    ui->actionNewFile->setEnabled(true);
+    ui->actionOpenFile->setEnabled(true);
+    ui->actionCloseFile->setEnabled(true);
+    ui->actionCloseProject->setEnabled(true);
+    ui->actionBuildOptions->setEnabled(true);
+    ui->actionSave->setEnabled(true);
 }
 
 void  armemus:: printProcess()
@@ -466,8 +518,7 @@ void armemus::closeProcess()
 }
 
 
-void armemus::update_editorStatus()
-{
+void armemus::update_editorStatus(){
 
 
     if(existProject)

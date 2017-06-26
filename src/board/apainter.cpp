@@ -1,3 +1,15 @@
+/*
+ * ARMEmuS pins and leds painter
+ *
+ * Copyright (c) 2017 ARMEmuS
+ *
+ * Authors:
+ *  Mario Alberto López Ocampo  <malo1986@msn.com>
+ *
+ * This work is licensed under the terms of the GNU GPL, version 2 or later.
+ * See the COPYING file in the top-level directory.
+ */
+
 #include "apainter.h"
 
 apainter::apainter(QGraphicsView *ptr_view, QGraphicsSvgItem *ptr_svgItem) : m_view(ptr_view) , m_svgItem(ptr_svgItem)

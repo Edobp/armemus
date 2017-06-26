@@ -41,7 +41,7 @@ private:
 
     //Workspace settings
 
-    inline void DisableButtons();    
+    inline void DisableButtons();
     inline void clearWorkspace();
     inline void setWorkspace();
     void loadBoards();
