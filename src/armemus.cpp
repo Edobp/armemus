@@ -140,13 +140,11 @@ void armemus::actionOpen()
 
         clearWorkspace();
 
-    }
+    }    
 
-    QFileDialog openWindow(this, tr("Open Proyect"), QString(),
-                           tr("Proyect Files (*.apf)"));
-    openWindow.setDirectory(QStandardPaths::standardLocations(QStandardPaths::HomeLocation).last());
-
-    QString projectName = openWindow.getOpenFileName();
+    QString projectName = QFileDialog::getOpenFileName(this, tr("Open Proyect"),
+                                                            QStandardPaths::standardLocations(QStandardPaths::HomeLocation).last(),
+                                                            tr("Proyect Files (*.apf)"));
 
     if(projectName.isEmpty())
         return;
@@ -283,25 +281,33 @@ void armemus::actionPlay()
 
     outputBrowser->clear();
 
-/*
-    QString File=projectInfo.path+"/"+projectInfo.name+"/Build/"+"main.elf";
-    QString command="--eval-command";
-
-    QemuProcess.setWorkingDirectory(QStandardPaths::standardLocations(QStandardPaths::HomeLocation).last());
-
-    QemuProcess.start("qemu-armemus/qemu-system-gnuarmeclipse", QStringList()<<"--mcu"<<"TM4C123GH6PM"<<"--gdb"<<"tcp::1234"<<"-L"<<"qemu-armemus/"<<"--verbose"<<"--verbose");
-*/
-
-    QString File=projectInfo.path+"/"+projectInfo.name+"/Build/"+projectInfo.name+".ino.elf";
-    QString command="--eval-command";        
-
     //Qemu debe estar en el home
     QemuProcess.setWorkingDirectory(QStandardPaths::standardLocations(QStandardPaths::HomeLocation).last());
 
-    //QemuProcess.start("qemu-armemus/qemu-system-gnuarmeclipse", QStringList()<<"--mcu"<<"SAM3X8E"<<"--gdb"<<"tcp::1234"<<"-L"<<"qemu-armemus/"<<"--verbose"<<"--verbose");
-    QemuProcess.start("qemu-armemus/qemu-system-gnuarmeclipse", QStringList()<<"--mcu"<<"SAMD21G18"<<"--gdb"<<"tcp::1234"<<"-L"<<"qemu-armemus/"<<"--verbose"<<"--verbose");
+    QString File; //file that will be executed in the mcu
+
+    switch (projectInfo.boardIndex) {
+    case ArduinoDue:
+        File=projectInfo.path+"/"+projectInfo.name+"/Build/"+projectInfo.name+".ino.elf";
+        QemuProcess.start("qemu-armemus/qemu-system-gnuarmeclipse", QStringList()<<"--mcu"<<"SAM3X8E"<<"--gdb"<<"tcp::1234"<<"-L"<<"qemu-armemus/"<<"--verbose"<<"--verbose");
+        break;
+    case ArduinoZero:
+        File=projectInfo.path+"/"+projectInfo.name+"/Build/"+projectInfo.name+".ino.elf";
+        QemuProcess.start("qemu-armemus/qemu-system-gnuarmeclipse", QStringList()<<"--mcu"<<"SAMD21G18"<<"--gdb"<<"tcp::1234"<<"-L"<<"qemu-armemus/"<<"--verbose"<<"--verbose");
+        break;
+    case Tiva:
+        //se debe cambiar en el archivo Makefile del resource la linea
+        //TIVAWARE_PATH = /home/malo/Escritorio/Builders/SW-EK-TM4C123GXL
+        File=projectInfo.path+"/"+projectInfo.name+"/Build/"+"main.elf";
+        QemuProcess.start("qemu-armemus/qemu-system-gnuarmeclipse", QStringList()<<"--mcu"<<"TM4C123GH6PM"<<"--gdb"<<"tcp::1234"<<"-L"<<"qemu-armemus/"<<"--verbose"<<"--verbose");
+        break;
+    default:
+        break;
+    }
 
     QemuProcess.waitForStarted(-1);
+
+    QString command="--eval-command";
 
     GDBprocess.start("arm-none-eabi-gdb",QStringList()<<command<<"target remote :1234"<<command<<"load"<<File<<command<<"c");
 
@@ -318,7 +324,7 @@ void armemus::actionPlay()
 
     board->turnOn();
 
-    tcpConection();
+    tcpConection(); //conexion tcp, debe haber soporte en QEMU para la conexion
 }
 
 void armemus::actionStop()
