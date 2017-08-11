@@ -1,2 +1,6 @@
-build/
+.qmake.stash
+/build*
 src/*.user
+src/*.pro*
+armemus
+Makefile*
