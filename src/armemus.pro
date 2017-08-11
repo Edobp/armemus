@@ -15,6 +15,11 @@ qtHaveModule(opengl): QT += opengl
 TARGET = armemus
 TEMPLATE = app
 
+OBJECTS_DIR = build/obj
+MOC_DIR = build/moc
+RCC_DIR = build/rcc
+UI_DIR = build/ui
+
 INCLUDEPATH += \
     src
 
